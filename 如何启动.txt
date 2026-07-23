@@ -1,0 +1,14 @@
+=== IMO 训练平台 本地启动指南 ===
+
+方法一：双击启动（最简单）
+  双击 start.command 文件，终端会自动打开并启动服务
+  访问 http://localhost:3000
+
+方法二：终端运行
+  打开终端，执行：
+  cd ~/Documents/try1try
+  npm run setup
+  npm run dev
+
+服务启动后，浏览器打开 http://localhost:3000
+按 Ctrl+C 停止服务

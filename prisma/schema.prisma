@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  username     String       @unique
+  passwordHash String       @map("password_hash")
+  role         String       @default("student")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  problems     Problem[]    @relation("ProblemCreator")
+  submissions  Submission[]
+  xpRecords    UserXp[]
+  xpLogs       XpLog[]
+  redos        Redo[]
+
+  @@map("users")
+}
+
+model Category {
+  id            String    @id
+  name          String
+  displayNameCn String    @map("display_name_cn")
+  problems      Problem[]
+  userXp        UserXp[]
+  xpLogs        XpLog[]
+
+  @@map("categories")
+}
+
+model DifficultyTier {
+  id           Int       @id
+  name         String
+  xpValue      Int       @map("xp_value")
+  problemCount Int       @map("problem_count")
+  problems     Problem[]
+
+  @@map("difficulty_tiers")
+}
+
+model Problem {
+  id             Int            @id @default(autoincrement())
+  categoryId     String         @map("category_id")
+  difficultyId   Int            @map("difficulty_id")
+  title          String
+  problemImages  String         @map("problem_images")
+  problemText    String?        @map("problem_text")
+  hint1Image     String?        @map("hint_1_image")
+  hint1Text      String?        @map("hint_1_text")
+  hint2Image     String?        @map("hint_2_image")
+  hint2Text      String?        @map("hint_2_text")
+  hint3Image     String?        @map("hint_3_image")
+  hint3Text      String?        @map("hint_3_text")
+  answerImages   String         @map("answer_images")
+  answerText     String?        @map("answer_text")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  createdBy      Int            @map("created_by")
+  category       Category       @relation(fields: [categoryId], references: [id])
+  difficultyTier DifficultyTier @relation(fields: [difficultyId], references: [id])
+  creator        User           @relation("ProblemCreator", fields: [createdBy], references: [id])
+  submissions    Submission[]
+  redos          Redo[]
+  xpLogs         XpLog[]
+
+  @@map("problems")
+}
+
+model Submission {
+  id           Int       @id @default(autoincrement())
+  problemId    Int       @map("problem_id")
+  studentId    Int       @map("student_id")
+  imagePath    String?   @map("image_path")
+  solutionText String?   @map("solution_text")
+  grade        String?
+  status       String    @default("pending")
+  hintsUsed    Int       @default(0) @map("hints_used")
+  attemptCount Int       @default(1) @map("attempt_count")
+  feedback     String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  gradedAt     DateTime? @map("graded_at")
+  gradedBy     Int?      @map("graded_by")
+  answerReadAt DateTime? @map("answer_read_at")
+  problem      Problem   @relation(fields: [problemId], references: [id])
+  student      User      @relation(fields: [studentId], references: [id])
+
+  @@map("submissions")
+}
+
+model UserXp {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  categoryId String   @map("category_id")
+  totalXp    Int      @default(0) @map("total_xp")
+  level      Int      @default(1)
+  user       User     @relation(fields: [userId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId])
+  @@map("user_xp")
+}
+
+model XpLog {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("user_id")
+  problemId      Int      @map("problem_id")
+  categoryId     String   @map("category_id")
+  baseXp         Int      @map("base_xp")
+  hintMultiplier Float    @map("hint_multiplier")
+  firstAttempt   Boolean  @map("first_attempt")
+  finalXp        Int      @map("final_xp")
+  createdAt      DateTime @default(now()) @map("created_at")
+  user           User     @relation(fields: [userId], references: [id])
+  problem        Problem  @relation(fields: [problemId], references: [id])
+  category       Category @relation(fields: [categoryId], references: [id])
+
+  @@map("xp_logs")
+}
+
+model Redo {
+  id        Int      @id @default(autoincrement())
+  problemId Int      @map("problem_id")
+  studentId Int      @map("student_id")
+  dueDate   DateTime @map("due_date")
+  completed Boolean  @default(false)
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  student   User     @relation(fields: [studentId], references: [id])
+
+  @@map("redos")
+}

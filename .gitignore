@@ -1,0 +1,9 @@
+node_modules/
+.next/
+*.db
+*.db-journal
+.env
+.env.local
+.DS_Store
+public/uploads/*
+!public/uploads/.gitkeep
