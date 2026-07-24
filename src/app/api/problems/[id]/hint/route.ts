@@ -30,6 +30,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       data: { status: 'revealed', hintsUsed: sub.hintsUsed + 1 },
     });
     await scheduleRedo(problemId, studentId);
+    // Deduct 50% of current balance
+    const wall = await prisma.wallet.findUnique({ where: { userId: studentId } });
+    if (wall && wall.balance > 0) {
+      const deduct = Math.max(1, Math.round(wall.balance * 0.5));
+      await prisma.wallet.update({ where: { userId: studentId }, data: { balance: { decrement: deduct } } });
+      await prisma.transaction.create({ data: { userId: studentId, amount: -deduct, reason: "reveal", message: "Answer revealed - 50% deduction" } });
+    }
     return NextResponse.json({ status: 'revealed', hintsUsed: sub.hintsUsed + 1 });
   }
 

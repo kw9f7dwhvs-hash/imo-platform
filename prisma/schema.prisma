@@ -18,6 +18,9 @@ model User {
   xpRecords    UserXp[]
   xpLogs       XpLog[]
   redos        Redo[]
+  wallet       Wallet?
+  transactions Transaction[]
+  hintPoolEntries HintPool[]
 
   @@map("users")
 }
@@ -66,6 +69,7 @@ model Problem {
   submissions    Submission[]
   redos          Redo[]
   xpLogs         XpLog[]
+  hintPoolEntries HintPool[]
 
   @@map("problems")
 }
@@ -85,7 +89,9 @@ model Submission {
   gradedAt     DateTime? @map("graded_at")
   gradedBy     Int?      @map("graded_by")
   answerReadAt DateTime? @map("answer_read_at")
-  problem      Problem   @relation(fields: [problemId], references: [id])
+  problem      Problem      @relation(fields: [problemId], references: [id])
+  hintFeedback  HintFeedback[]
+  studentFeedback StudentFeedback?
   student      User      @relation(fields: [studentId], references: [id])
 
   @@map("submissions")
@@ -131,4 +137,57 @@ model Redo {
   student   User     @relation(fields: [studentId], references: [id])
 
   @@map("redos")
+}
+model Wallet {
+  id        Int    @id @default(autoincrement())
+  userId    Int    @unique @map("user_id")
+  balance   Int    @default(100)
+  user      User   @relation(fields: [userId], references: [id])
+  @@map("wallets")
+}
+
+model Transaction {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  amount     Int
+  reason     String   // 'submit' | 'grade_refund' | 'reveal' | 'admin' | 'hint_reward'
+  message    String?
+  adminId    Int?     @map("admin_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id])
+  @@map("transactions")
+}
+
+model HintFeedback {
+  id             Int      @id @default(autoincrement())
+  submissionId   Int      @map("submission_id")
+  hintNumber     Int      @map("hint_number") // 1-3
+  useful         Boolean  @default(false)
+  revealedAnswer Boolean  @default(false) @map("revealed_answer")
+  createdAt      DateTime @default(now()) @map("created_at")
+  submission     Submission @relation(fields: [submissionId], references: [id])
+  @@map("hint_feedback")
+}
+
+model StudentFeedback {
+  id             Int      @id @default(autoincrement())
+  submissionId   Int      @unique @map("submission_id")
+  perceivedStars Int?     @map("perceived_stars") // 1-5
+  submittedHint  String?  @map("submitted_hint")
+  createdAt      DateTime @default(now()) @map("created_at")
+  submission     Submission @relation(fields: [submissionId], references: [id])
+  @@map("student_feedback")
+}
+
+model HintPool {
+  id           Int      @id @default(autoincrement())
+  problemId    Int      @map("problem_id")
+  hintNumber   Int      @map("hint_number") // which hint slot (1-3), 0 = new
+  hintText     String   @map("hint_text")
+  status       String   @default("standby") // 'standby' | 'active'
+  submittedBy  Int      @map("submitted_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  problem      Problem  @relation(fields: [problemId], references: [id])
+  submitter    User     @relation(fields: [submittedBy], references: [id])
+  @@map("hint_pool")
 }

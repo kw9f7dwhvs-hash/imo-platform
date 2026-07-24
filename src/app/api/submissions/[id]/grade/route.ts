@@ -57,5 +57,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   if (grade === 'retry') await scheduleRedo(sub.problemId, sub.studentId);
 
+  // Coin refund logic
+  const w = await prisma.wallet.findUnique({ where: { userId: sub.studentId } });
+  if (w) {
+    let refund = 0;
+    if (grade === 'clarify') refund = 1;      // Full refund
+    else if (grade === 'correct') refund = Math.round(1 * 0.8); // 80% back
+    // 'pass': keep all coins (no refund)
+    if (refund > 0) {
+      await prisma.wallet.update({ where: { userId: sub.studentId }, data: { balance: { increment: refund } } });
+      await prisma.transaction.create({ data: { userId: sub.studentId, amount: refund, reason: "grade_refund", message: "Refund: " + grade, adminId } });
+    }
+  }
   return NextResponse.json({ ok: true, status: newStatus, grade });
 }

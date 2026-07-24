@@ -19,15 +19,17 @@ export default function ProblemsPage() {
   const [activeCount, setActiveCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
   const [revealedUnread, setRevealedUnread] = useState(0);
-  const [filter, setFilter] = useState({ category: '', difficulty: '' });
+  const [filter, setFilter] = useState({ category: '', difficultyMin: '', difficultyMax: '' });
   const [tab, setTab] = useState<'active' | 'history'>('active');
   const [loading, setLoading] = useState(true);
 
   const fetchProblems = async () => {
     const params = new URLSearchParams();
     if (tab === 'history') params.set('history', 'true');
+    if (filter.difficultyMin) params.set('difficultyMin', filter.difficultyMin);
+    if (filter.difficultyMax) params.set('difficultyMax', filter.difficultyMax);
     if (filter.category) params.set('category', filter.category);
-    if (filter.difficulty) params.set('difficulty', filter.difficulty);
+    
     const r = await fetch('/api/problems?' + params.toString());
     const data = await r.json();
     setProblems(data.problems || []);
@@ -72,14 +74,7 @@ export default function ProblemsPage() {
           <select value={filter.category} onChange={e => setFilter(f => ({ ...f, category: e.target.value }))} className="px-3 py-1.5 border rounded-lg text-sm">
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select value={filter.difficulty} onChange={e => setFilter(f => ({ ...f, difficulty: e.target.value }))} className="px-3 py-1.5 border rounded-lg text-sm">
-            <option value="">All Stars</option>
-            <option value="1">★1</option>
-            <option value="2">★2</option>
-            <option value="3">★3</option>
-            <option value="4">★4</option>
-            <option value="5">★5</option>
-          </select>
+          <div className="flex gap-1 items-center text-sm"><select value={filter.difficultyMin || ""} onChange={e => setFilter(f => ({...f, difficultyMin: e.target.value}))} className="px-2 py-1.5 border rounded-lg text-sm"><option value="">Min</option><option value="1">★1</option><option value="2">★2</option><option value="3">★3</option><option value="4">★4</option><option value="5">★5</option></select><span className="text-gray-400">~</span><select value={filter.difficultyMax || ""} onChange={e => setFilter(f => ({...f, difficultyMax: e.target.value}))} className="px-2 py-1.5 border rounded-lg text-sm"><option value="">Max</option><option value="1">★1</option><option value="2">★2</option><option value="3">★3</option><option value="4">★4</option><option value="5">★5</option></select></div>
         </div>
 
         {loading ? (

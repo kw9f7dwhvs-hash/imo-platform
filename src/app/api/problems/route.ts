@@ -12,7 +12,8 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const category = url.searchParams.get('category');
-  const difficulty = url.searchParams.get('difficulty');
+  const difficultyMin = url.searchParams.get('difficultyMin');
+  const difficultyMax = url.searchParams.get('difficultyMax');
   const history = url.searchParams.get('history') === 'true';
 
   if (history) {
@@ -49,12 +50,16 @@ export async function GET(req: Request) {
   const activeNonRevealed = new Set(activeSubs.filter(s => s.status !== 'revealed').map(s => s.problemId));
   const activeCount = activeNonRevealed.size;
   const revealedUnreadCount = activeSubs.filter(s => s.status === 'revealed').length;
-  const slotsLeft = 8 - activeCount;
+  const slotsLeft = 2 - activeCount;
 
   // Build query for problems
   const where: any = {};
   if (category) where.categoryId = category;
-  if (difficulty) where.difficultyId = parseInt(difficulty);
+  if (difficultyMin || difficultyMax) {
+    if (!where.difficultyId) where.difficultyId = {};
+    if (difficultyMin) where.difficultyId.gte = parseInt(difficultyMin);
+    if (difficultyMax) where.difficultyId.lte = parseInt(difficultyMax);
+  }
 
   // Get currently active problems (submitted but not finished)
   const activeProblems = await prisma.problem.findMany({
@@ -85,7 +90,7 @@ export async function GET(req: Request) {
     });
   }
 
-  const all = [...activeProblems, ...newProblems].slice(0, 8);
+  const all = [...activeProblems, ...newProblems].slice(0, 2);
 
   const result = all.map(p => {
     const sub = p.submissions[0] || null;

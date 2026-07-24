@@ -47,5 +47,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     data: { problemId, studentId, imagePath, solutionText, status: 'pending', attemptCount: 1 },
   });
 
+  // Deduct 1 coin
+  const wallet = await prisma.wallet.findUnique({ where: { userId: studentId } });
+  if (wallet && wallet.balance >= 1) {
+    await prisma.wallet.update({ where: { userId: studentId }, data: { balance: { decrement: 1 } } });
+    await prisma.transaction.create({ data: { userId: studentId, amount: -1, reason: 'submit', message: 'Submission cost' } });
+  }
   return NextResponse.json(submission);
 }
