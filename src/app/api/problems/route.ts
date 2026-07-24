@@ -35,15 +35,21 @@ export async function GET(req: Request) {
     });
   }
 
-  // Get all active submissions for this student
-  const activeSubs = await prisma.submission.findMany({
-    where: {
-      studentId,
-      status: { notIn: ['passed', 'answer_read'] },
-    },
-    include: { problem: { select: { id: true } } },
+  // Get the LATEST submission per problem, then filter active ones
+  const latestSubs = await prisma.submission.findMany({
+    where: { studentId },
     orderBy: { createdAt: 'desc' },
   });
+  // Keep only the latest submission per problem
+  const latestPerProblem = new Map();
+  for (const sub of latestSubs) {
+    if (!latestPerProblem.has(sub.problemId)) {
+      latestPerProblem.set(sub.problemId, sub);
+    }
+  }
+  const activeSubs = Array.from(latestPerProblem.values()).filter(
+    s => s.status !== 'passed' && s.status !== 'answer_read'
+  );
 
   const activeProblemIds = new Set(activeSubs.map((s: any) => s.problemId));
   // Count unique active problem IDs (not submission rows, since one problem can have multiple submissions)
