@@ -35,6 +35,7 @@ export async function POST(req: Request) {
     if (!problem?.hint1Text) await prisma.problem.update({ where: { id: entry.problemId }, data: { hint1Text: entry.hintText } });
     else if (!problem?.hint2Text) await prisma.problem.update({ where: { id: entry.problemId }, data: { hint2Text: entry.hintText } });
     else if (!problem?.hint3Text) await prisma.problem.update({ where: { id: entry.problemId }, data: { hint3Text: entry.hintText } });
+    else { await prisma.problem.update({ where: { id: entry.problemId }, data: { hint3Text: entry.hintText } }); }
   }
   return NextResponse.json({ ok: true });
 }
