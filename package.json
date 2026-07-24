@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "DATABASE_URL=file:/data/app.db npx prisma db push --accept-data-loss 2>&1 | tail -1; DATABASE_URL=file:/data/app.db node prisma/seed.js 2>&1 | tail -1; exec next start -p ${PORT:-3000} -H 0.0.0.0",
+    "start": "next start -p $PORT -H 0.0.0.0",
     "db:push": "npx prisma db push",
     "db:seed": "node prisma/seed.js",
     "setup": "DATABASE_URL=file:/data/app.db npx prisma db push --accept-data-loss && DATABASE_URL=file:/data/app.db node prisma/seed.js",
