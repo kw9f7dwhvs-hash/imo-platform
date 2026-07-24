@@ -20,10 +20,10 @@ export async function GET() {
     },
   });
 
-  const result = students.map(s => {
+  const result = students.map((s: any) => {
     const subs = s.submissions;
     const totalAttempts = subs.length;
-    const passed = subs.filter(x => x.grade === 'pass').length;
+    const passed = subs.filter((x: any) => x.grade === 'pass').length;
 
     const catStats: Record<string, any> = {};
     const diffStats: Record<string, any> = {};
@@ -52,7 +52,7 @@ export async function GET() {
       catStats,
       diffStats,
       xpRecords: s.xpRecords,
-      allSubmissions: subs.map(sub => ({
+      allSubmissions: subs.map((sub: any) => ({
         id: sub.id,
         problemTitle: sub.problem.title,
         categoryId: sub.problem.categoryId,

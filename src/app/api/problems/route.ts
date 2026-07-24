@@ -23,7 +23,7 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json({
-      problems: doneSubs.map(sub => ({
+      problems: doneSubs.map((sub: any) => ({
         id: sub.problem.id, title: sub.problem.title,
         categoryId: sub.problem.categoryId, difficultyId: sub.problem.difficultyId,
         category: sub.problem.category, difficultyTier: sub.problem.difficultyTier,
@@ -45,11 +45,11 @@ export async function GET(req: Request) {
     orderBy: { createdAt: 'desc' },
   });
 
-  const activeProblemIds = new Set(activeSubs.map(s => s.problemId));
+  const activeProblemIds = new Set(activeSubs.map((s: any) => s.problemId));
   // Count unique active problem IDs (not submission rows, since one problem can have multiple submissions)
-  const activeNonRevealed = new Set(activeSubs.filter(s => s.status !== 'revealed').map(s => s.problemId));
+  const activeNonRevealed = new Set(activeSubs.filter((s: any) => s.status !== 'revealed').map((s: any) => s.problemId));
   const activeCount = activeNonRevealed.size;
-  const revealedUnreadCount = activeSubs.filter(s => s.status === 'revealed').length;
+  const revealedUnreadCount = activeSubs.filter((s: any) => s.status === 'revealed').length;
   const slotsLeft = 2 - activeCount;
 
   // Build query for problems
@@ -74,7 +74,7 @@ export async function GET(req: Request) {
     select: { problemId: true },
     distinct: ['problemId'],
   });
-  const allDoneIds = new Set(allStudentSubIds.map(s => s.problemId));
+  const allDoneIds = new Set(allStudentSubIds.map((s: any) => s.problemId));
 
   // Get new problems to fill slots (excluding any the student has ever submitted to)
   let newProblems: any[] = [];
@@ -92,7 +92,7 @@ export async function GET(req: Request) {
 
   const all = [...activeProblems, ...newProblems].slice(0, 2);
 
-  const result = all.map(p => {
+  const result = all.map((p: any) => {
     const sub = p.submissions[0] || null;
     return {
       id: p.id, title: p.title, categoryId: p.categoryId, difficultyId: p.difficultyId,

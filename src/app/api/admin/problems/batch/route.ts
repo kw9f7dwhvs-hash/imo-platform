@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const formData = await req.formData();
   const configs = JSON.parse(formData.get('configs') as string);
 
-  const results = [];
+  const results: any[] = [];
   for (const cfg of configs) {
     const problemImages: string[] = [];
     for (const fname of cfg.problemFiles || []) {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       if (f) problemImages.push(await saveUploadedFile(f, 'problems'));
     }
 
-    let hint1 = null, hint2 = null, hint3 = null;
+    let hint1: string|null = null, hint2: string|null = null, hint3: string|null = null;
     if (cfg.hint1File) { const f = formData.get(cfg.hint1File) as File; if (f) hint1 = await saveUploadedFile(f, 'hints'); }
     if (cfg.hint2File) { const f = formData.get(cfg.hint2File) as File; if (f) hint2 = await saveUploadedFile(f, 'hints'); }
     if (cfg.hint3File) { const f = formData.get(cfg.hint3File) as File; if (f) hint3 = await saveUploadedFile(f, 'hints'); }

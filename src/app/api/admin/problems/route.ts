@@ -15,7 +15,7 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
   });
 
-  return NextResponse.json(problems.map(p => ({
+  return NextResponse.json(problems.map((p: any) => ({
     id: p.id, title: p.title, categoryId: p.categoryId, difficultyId: p.difficultyId,
     category: p.category, difficultyTier: p.difficultyTier,
     createdAt: p.createdAt.toISOString(), creator: p.creator.username,
