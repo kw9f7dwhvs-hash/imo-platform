@@ -59,8 +59,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const w = await prisma.wallet.findUnique({ where: { userId: sub.studentId } });
   if (w) {
     let refund = 0;
-    if (grade === 'clarify') refund = 1;      // Full refund
-    else if (grade === 'correct') refund = Math.round(1 * 0.8); // 80% back
+    if (grade === "clarify") refund = 10;      // Full refund
+    else if (grade === "correct") refund = Math.round(10 * 0.8); // 80% back
     // 'pass': keep all coins (no refund)
     if (refund > 0) {
       await prisma.wallet.update({ where: { userId: sub.studentId }, data: { balance: { increment: refund } } });

@@ -41,7 +41,7 @@ export default function ProblemDetailPage() {
     if (solutionText.trim()) formData.append('text', solutionText);
     const r = await fetch('/api/problems/' + id + '/submit', { method: 'POST', body: formData });
     const data = await r.json();
-    if (r.ok) { setMsg('Submitted! (-1 coin)'); setSolutionText(''); setSelectedFile(null); fetchProblem(); fetch('/api/user/wallet').then(r2 => r2.json()).then(d => setWallet(d)); }
+    if (r.ok) { setMsg('Submitted! (-10 coins)'); setSolutionText(''); setSelectedFile(null); fetchProblem(); fetch('/api/user/wallet').then(r2 => r2.json()).then(d => setWallet(d)); }
     else setMsg(data.error || 'Submit failed');
     setSubmitting(false);
   };
@@ -153,7 +153,7 @@ export default function ProblemDetailPage() {
         {!isPassed && !isRevealed && !isRead && (
           <>
             <div className="bg-white p-4 rounded-lg border space-y-3">
-              <h2 className="font-semibold">Submit Your Solution {wallet && <span className="text-xs text-gray-400 font-normal">(cost: 1 coin · balance: {wallet.balance})</span>}</h2>
+              <h2 className="font-semibold">Submit Your Solution {wallet && <span className="text-xs text-gray-400 font-normal">(cost: 10 coins · balance: {wallet.balance})</span>}</h2>
               <div><label className="block text-sm text-gray-500 mb-1">Write your solution (supports LaTeX with $...$)</label>
                 <textarea value={solutionText} onChange={e => setSolutionText(e.target.value)} rows={5} className="w-full px-3 py-2 border rounded-lg text-sm font-mono" placeholder="We prove that $n=1$ is the only solution..." /></div>
               <div><label className="block text-sm text-gray-500 mb-1">Or upload an image</label>
