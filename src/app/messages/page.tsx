@@ -16,7 +16,7 @@ export default function MessagesPage() {
   }, [box, refresh]);
 
   useEffect(() => {
-    fetch('/api/admin/wallet').then(r => r.json()).then(d => {
+    fetch('/api/users').then(r => r.json()).then(d => {
       if (Array.isArray(d)) setUsers(d);
     }).catch(() => {});
   }, []);
@@ -58,8 +58,8 @@ export default function MessagesPage() {
             <h2 className="font-semibold">New Message</h2>
             <select value={form.toUserId} onChange={e => setForm(f => ({...f, toUserId: e.target.value}))} className="w-full px-3 py-2 border rounded-lg text-sm">
               <option value="">Select recipient...</option>
-              {(users || []).filter((u: any) => u.user?.role !== 'admin').map((u: any) => (
-                <option key={u.userId || u.id} value={u.userId || u.id}>{u.user?.username || u.username}</option>
+              {(users || []).map((u: any) => (
+                <option key={u.id} value={u.id}>{u.username}</option>
               ))}
             </select>
             <input type="text" placeholder="Subject" value={form.subject} onChange={e => setForm(f => ({...f, subject: e.target.value}))} className="w-full px-3 py-2 border rounded-lg text-sm" />
