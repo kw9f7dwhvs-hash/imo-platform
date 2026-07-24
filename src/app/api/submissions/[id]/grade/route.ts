@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { calculateFinalXp } from '@/lib/xp';
-import { scheduleRedo } from '@/lib/redo';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -55,7 +54,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     });
   }
 
-  if (grade === 'retry') await scheduleRedo(sub.problemId, sub.studentId);
 
   // Coin refund logic
   const w = await prisma.wallet.findUnique({ where: { userId: sub.studentId } });

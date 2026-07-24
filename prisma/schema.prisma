@@ -18,6 +18,8 @@ model User {
   xpRecords    UserXp[]
   xpLogs       XpLog[]
   redos        Redo[]
+  sentMessages     Message[]     @relation("SentMessages")
+  receivedMessages Message[]     @relation("ReceivedMessages")
   wallet       Wallet?
   transactions Transaction[]
   hintPoolEntries HintPool[]
@@ -137,6 +139,20 @@ model Redo {
   student   User     @relation(fields: [studentId], references: [id])
 
   @@map("redos")
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  fromUserId  Int      @map("from_user_id")
+  toUserId    Int      @map("to_user_id")
+  subject    String
+  body       String?
+  coins      Int      @default(0)
+  readAt     DateTime? @map("read_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  fromUser   User     @relation("SentMessages", fields: [fromUserId], references: [id])
+  toUser     User     @relation("ReceivedMessages", fields: [toUserId], references: [id])
+  @@map("messages")
 }
 model Wallet {
   id        Int    @id @default(autoincrement())

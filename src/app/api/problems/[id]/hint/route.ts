@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { scheduleRedo } from '@/lib/redo';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -29,7 +28,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       where: { id: sub.id },
       data: { status: 'revealed', hintsUsed: sub.hintsUsed + 1 },
     });
-    await scheduleRedo(problemId, studentId);
     // Deduct 50% of current balance
     const wall = await prisma.wallet.findUnique({ where: { userId: studentId } });
     if (wall && wall.balance > 0) {

@@ -13,7 +13,7 @@
     "seed": "DATABASE_URL=file:/data/app.db node prisma/seed.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.14.0",
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "katex": "^0.18.1",
     "next": "^14.2.0",
