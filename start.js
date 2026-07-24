@@ -2,14 +2,19 @@ const { execSync } = require("child_process");
 const port = process.env.PORT || "3000";
 
 try {
-  execSync("npx prisma db push --accept-data-loss", { stdio: "pipe", env: { ...process.env } });
+  execSync("npx prisma generate", { stdio: "inherit", env: { ...process.env } });
 } catch(e) {
-  // DB setup might fail, that's ok
+  console.log("prisma generate failed (might be OK)");
 }
 try {
-  execSync("node prisma/seed.js", { stdio: "pipe", env: { ...process.env } });
+  execSync("npx prisma db push --accept-data-loss", { stdio: "inherit", env: { ...process.env } });
 } catch(e) {
-  // Seed might fail if already seeded, that's ok
+  console.log("prisma db push failed");
+}
+try {
+  execSync("node prisma/seed.js", { stdio: "inherit", env: { ...process.env } });
+} catch(e) {
+  console.log("seed failed (might be OK)");
 }
 
 execSync("npx next start -p " + port + " -H 0.0.0.0", { stdio: "inherit" });
