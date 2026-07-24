@@ -17,11 +17,14 @@ const statusBadge: Record<string, string> = {
 
 export default function AdminStatsPage() {
   const [data, setData] = useState<any>(null);
+  const [problemData, setProblemData] = useState<any[]>([]);
+  const [view, setView] = useState('students');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [logFilter, setLogFilter] = useState<string>('all');
 
   useEffect(() => {
     fetch('/api/admin/stats').then(r => r.json()).then(setData);
+    fetch('/api/admin/problem-stats').then(r => r.json()).then(setProblemData).catch(() => {});
   }, []);
 
   const filteredSubs = (subs: any[]) => {
@@ -32,7 +35,11 @@ export default function AdminStatsPage() {
   return (
     <AuthGuard requiredRole="admin">
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Student Statistics</h1>
+        <h1 className="text-2xl font-bold">Admin Statistics</h1>
+        <div className="flex gap-2 mb-4">
+          <button onClick={() => setView("students")} className={"px-3 py-1 rounded-lg text-sm " + (view === "students" ? "bg-blue-600 text-white" : "bg-gray-100")}>By Student</button>
+          <button onClick={() => setView("problems")} className={"px-3 py-1 rounded-lg text-sm " + (view === "problems" ? "bg-blue-600 text-white" : "bg-gray-100")}>By Problem</button>
+        </div>
 
         <div className="flex gap-2 mb-4">
           {['all', 'pending', 'passed', 'revealed', 'answer_read', 'retry'].map(f => (
@@ -152,6 +159,35 @@ export default function AdminStatsPage() {
           ))
         )}
       </div>
-    </AuthGuard>
+    
+      {view === "problems" && (
+        <div className="space-y-4">
+          {problemData.length === 0 ? <p className="text-gray-400">No submissions yet.</p> :
+            problemData.map(prob => {
+              const total = prob.students.length;
+              const passed = prob.students.filter((s: any) => s.status === "passed").length;
+              return (
+                <div key={prob.id} className="bg-white rounded-lg border p-4">
+                  <div className="flex justify-between mb-2">
+                    <div>
+                      <p className="font-medium">{prob.title}</p>
+                      <p className="text-xs text-gray-500">{prob.categoryId} | {prob.difficultyTier?.name} | {total} student(s), {passed} passed</p>
+                    </div>
+                  </div>
+                  {total > 0 && (
+                    <table className="w-full text-sm mt-2">
+                      <thead><tr className="border-t text-xs text-gray-500"><th className="text-left p-1">Student</th><th className="text-left p-1">Status</th><th className="text-left p-1">Grade</th><th className="text-left p-1">Hints</th><th className="text-left p-1">Attempts</th></tr></thead>
+                      <tbody>{prob.students.map((s: any, i: number) => (
+                        <tr key={i} className="border-t"><td className="p-1">{s.username}</td><td className="p-1">{s.status || "-"}</td><td className="p-1">{s.grade || "-"}</td><td className="p-1">{s.hintsUsed}/3</td><td className="p-1">#{s.attemptCount}</td></tr>
+                      ))}</tbody>
+                    </table>
+                  )}
+                </div>
+              );
+            })
+          }
+        </div>
+      )}
+      </AuthGuard>
   );
 }
