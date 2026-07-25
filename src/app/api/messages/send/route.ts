@@ -35,6 +35,7 @@ export async function POST(req: Request) {
     }
     await prisma.wallet.update({ where: { userId: senderId }, data: { balance: { decrement: coinAmount } } });
   }
+  // Deduct from sender (non-admin) - already done above
   // Add to recipient (always)
   if (coinAmount > 0) {
     await prisma.wallet.upsert({
@@ -45,6 +46,16 @@ export async function POST(req: Request) {
     await prisma.transaction.create({
       data: { userId: toUserId, amount: coinAmount, reason: 'admin', message: 'Coin transfer from ' + (session.user as any).name },
     });
+  }
+
+  // Process coin transfer for non-broadcast
+  if (coinAmount > 0 && toUserId !== 0) {
+    const recipientWallet = await prisma.wallet.findUnique({ where: { userId: toUserId } });
+    if (recipientWallet) {
+      await prisma.wallet.update({ where: { userId: toUserId }, data: { balance: { increment: coinAmount } } });
+    } else {
+      await prisma.wallet.create({ data: { userId: toUserId, balance: 100 + coinAmount } });
+    }
   }
 
   const msg = await prisma.message.create({
