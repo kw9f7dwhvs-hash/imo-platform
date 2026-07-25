@@ -11,12 +11,15 @@ export default function AdminProblemsPage() {
 
   const fetchProblems = async () => {
     setLoading(true);
-    const r = await fetch('/api/admin/problems');
+    const p = new URLSearchParams();
+    if (search) p.set('search', search);
+    if (diffFilter) p.set('difficulty', diffFilter);
+    const r = await fetch('/api/admin/problems?' + p.toString());
     if (r.ok) setProblems(await r.json());
     setLoading(false);
   };
 
-  useEffect(() => { fetchProblems(); }, []);
+  useEffect(() => { fetchProblems(); }, [search, diffFilter]);
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this problem?')) return;
