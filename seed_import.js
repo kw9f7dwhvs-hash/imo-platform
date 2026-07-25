@@ -97,7 +97,7 @@ async function main() {
   }
   
   // Ensure all problems have titles
-  for (const p2 of problems) { if (!p2.title) p2.title = String(p2.year) + "IMOSL"; }
+  for (const p2 of problems) { if (!p2.title) p2.title = String(p2.year) + "IMOSL" + (p2.category || "") + (p2.num || ""); }
 
   // Add new OR update existing problems that lack answers
   let added = 0;
