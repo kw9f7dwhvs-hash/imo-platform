@@ -22,10 +22,7 @@ async function main() {
   // Clear old data in order (child tables first)
   await prisma.xpLog.deleteMany();
   await prisma.redo.deleteMany();
-  await prisma.hintPool.deleteMany();
-  await prisma.hintFeedback.deleteMany();
-  await prisma.studentFeedback.deleteMany();
-  await prisma.transaction.deleteMany();
+        await prisma.transaction.deleteMany();
   await prisma.message.deleteMany();
   await prisma.submission.deleteMany();
   await prisma.userXp.deleteMany();
