@@ -84,9 +84,13 @@ async function main() {
 
   await prisma.xpLog.deleteMany();
   await prisma.redo.deleteMany();
+  await prisma.hintPool.deleteMany();
+  await prisma.hintFeedback.deleteMany();
+  await prisma.studentFeedback.deleteMany();
+  await prisma.transaction.deleteMany();
+  await prisma.message.deleteMany();
   await prisma.submission.deleteMany();
   await prisma.userXp.deleteMany();
-  await prisma.hintPool.deleteMany();
   await prisma.problem.deleteMany();
   console.log('Cleared old problems');
 
