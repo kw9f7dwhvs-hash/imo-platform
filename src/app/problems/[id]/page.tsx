@@ -15,6 +15,9 @@ export default function ProblemDetailPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [solutionText, setSolutionText] = useState('');
   const [msg, setMsg] = useState('');
+  const [showStars, setShowStars] = useState(false);
+  const [starRating, setStarRating] = useState(0);
+  const [submittingStar, setSubmittingStar] = useState(false);
   const [wallet, setWallet] = useState<any>(null);
           
   const fetchProblem = useCallback(async () => {
@@ -89,7 +92,7 @@ export default function ProblemDetailPage() {
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
               <p className="text-amber-700 mb-3">Please read the answer carefully.</p>
-              <button onClick={async () => { await fetch('/api/problems/' + id + '/read-answer', { method: 'POST' }); window.location.href = "/problems"; }} className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Mark as Read</button>
+              <button onClick={async () => { await fetch('/api/problems/' + id + '/read-answer', { method: 'POST' }); setShowStars(true); }} className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Mark as Read</button>
             </div>
           </div>
         )}
@@ -120,6 +123,31 @@ export default function ProblemDetailPage() {
                 onRequestHint={handleHint} disabled={submitting} isRevealed={false} status={sub?.status || ''} />
             </div>
           </>
+        )}
+
+        {showStars && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" onClick={() => { setShowStars(false); window.location.href = '/problems'; }}>
+            <div className="bg-white rounded-lg p-6 max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+              <h2 className="font-semibold text-lg mb-2">Rate this problem</h2>
+              <p className="text-sm text-gray-500 mb-3">What difficulty did you actually experience?</p>
+              <div className="flex justify-center gap-1 mb-4">{[1,2,3,4,5].map(s => (
+                <button key={s} onClick={() => setStarRating(s)} className={'text-3xl ' + (s <= starRating ? 'text-amber-400' : 'text-gray-200')}>★</button>
+              ))}</div>
+              <button onClick={async () => {
+                if (starRating === 0) return;
+                setSubmittingStar(true);
+                await fetch('/api/problems/' + id + '/feedback', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ perceivedStars: starRating, submittedHint: '' }),
+                });
+                setSubmittingStar(false);
+                window.location.href = '/problems';
+              }} disabled={submittingStar || starRating === 0} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                {submittingStar ? 'Submitting...' : 'Submit'}
+              </button>
+              <button onClick={() => { setShowStars(false); window.location.href = '/problems'; }} className="ml-2 px-4 py-2 text-sm text-gray-500">Skip</button>
+            </div>
+          </div>
         )}
 
         {sub && sub.status !== 'pending' && !isPassed && !isRevealed && !isRead && (
