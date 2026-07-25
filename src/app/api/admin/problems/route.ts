@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const search = url.searchParams.get('search') || '';
   const diffFilter = url.searchParams.get('difficulty') || '';
   
-  const where: any = { active: true };
+  const where: any = {};
   if (diffFilter) where.difficultyId = parseInt(diffFilter);
   if (search) where.title = { contains: search };
   
@@ -46,36 +46,7 @@ export async function GET(req: Request) {
     return { ...rest, studentStats };
   });
   
-  // Also include inactive problems for admin management
-  const allProblems = await prisma.problem.findMany({
-    include: {
-      category: true,
-      difficultyTier: true,
-      creator: { select: { username: true } },
-      submissions: {
-        include: { student: { select: { id: true, username: true } } },
-        orderBy: { createdAt: 'desc' },
-      },
-    },
-    orderBy: { id: 'desc' },
-    take: 500,
-  });
-  
-  const allResult = allProblems.map(p => {
-    const lastSub = new Map();
-    for (const sub of p.submissions) {
-      if (!lastSub.has(sub.studentId)) lastSub.set(sub.studentId, sub);
-    }
-    const studentStats = Array.from(lastSub.values()).map(sub => ({
-      username: sub.student?.username,
-      status: sub.status,
-      grade: sub.grade,
-    }));
-    const { submissions, ...rest } = p;
-    return { ...rest, studentStats };
-  });
-  
-  return NextResponse.json(allResult);
+  return NextResponse.json(result);
 }
 
 export async function PATCH(req: Request) {
