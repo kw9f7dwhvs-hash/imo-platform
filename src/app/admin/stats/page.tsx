@@ -149,7 +149,7 @@ export default function AdminStatsPage() {
                                 <td className="p-2 text-xs text-gray-400">{new Date(sub.createdAt).toLocaleDateString()}</td>
 <td className="p-2 text-xs">{sub.studentFeedback?.[0]?.perceivedStars ? '★'.repeat(sub.studentFeedback[0].perceivedStars) : '-'}</td>
                               <td className="p-2 text-xs max-w-[150px] truncate" title={sub.studentFeedback?.[0]?.submittedHint || ''}>{sub.studentFeedback?.[0]?.submittedHint || '-'}</td>
-                              <td className="p-2 text-xs">{sub.hintFeedback?.length > 0 ? sub.hintFeedback.map((hf: any) => `H${hf.hintNumber}:${hf.useful ? '👍' : '👎'${hf.revealedAnswer ? '⚠️' : ''}`).join(', ') : '-'}</td>
+                              <td className="p-2 text-xs">{sub.hintFeedback?.length > 0 ? sub.hintFeedback.map((hf: any) => "H" + hf.hintNumber + ":" + (hf.useful ? "👍" : "👎") + (hf.revealedAnswer ? "⚠️" : "")).join(", ") : "-"}</td>
                               </tr>
                             ))}
                           </tbody>

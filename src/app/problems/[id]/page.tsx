@@ -16,8 +16,7 @@ export default function ProblemDetailPage() {
   const [solutionText, setSolutionText] = useState('');
   const [msg, setMsg] = useState('');
   const [wallet, setWallet] = useState<any>(null);
-  const [showHintFeedback, setShowHintFeedback] = useState(false);
-        
+          
   const fetchProblem = useCallback(async () => {
     const r = await fetch('/api/problems/' + id);
     if (r.ok) setProblem(await r.json());
@@ -47,9 +46,6 @@ export default function ProblemDetailPage() {
     if (r.ok) {
       fetchProblem();
       fetch('/api/user/wallet').then(r2 => r2.json()).then(d => setWallet(d));
-      const data = await r.json();
-      if (data.status === 'revealed') setShowHintFeedback(true);
-      else setShowHintFeedback(true);
     }
     else setMsg((await r.json()).error || 'Request failed');
   };
@@ -93,42 +89,14 @@ export default function ProblemDetailPage() {
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
               <p className="text-amber-700 mb-3">Please read the answer carefully.</p>
-              <button onClick={async () => { await fetch('/api/problems/' + id + '/read-answer', { method: 'POST' }); setShowStudentFeedback(true); }} className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Mark as Read</button>
+              <button onClick={async () => { await fetch('/api/problems/' + id + '/read-answer', { method: 'POST' }); window.location.href = "/problems"; }} className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Mark as Read</button>
             </div>
           </div>
         )}
 
         {/* Hint feedback */}
-        {showHintFeedback && (
-          <div className="bg-gray-50 border rounded-lg p-4 space-y-3">
-            <h3 className="font-medium text-sm">Was this hint useful?</h3>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-1 text-sm"><input type="radio" name="useful" checked={hintFeedback.useful} onChange={() => setHintFeedback(f => ({...f, useful: true}))} /> Useful</label>
-              <label className="flex items-center gap-1 text-sm"><input type="radio" name="useful" checked={!hintFeedback.useful} onChange={() => setHintFeedback(f => ({...f, useful: false}))} /> Not useful</label>
-            </div>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hintFeedback.revealedAnswer} onChange={e => setHintFeedback(f => ({...f, revealedAnswer: e.target.checked}))} /> This hint fully revealed the answer</label>
-            <button onClick={submitHintFeedback} disabled={submittingFeedback} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">{submittingFeedback ? '...' : 'Submit feedback'}</button>
-          </div>
-        )}
-
-        {/* Student feedback after pass/reveal */}
-        {showStudentFeedback && (
-          <div className="bg-gray-50 border rounded-lg p-4 space-y-3">
-            <h3 className="font-medium text-sm">Rate this problem</h3>
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Actual difficulty you experienced (1-5 stars):</p>
-              <div className="flex gap-1">{[1,2,3,4,5].map(s => <button key={s} onClick={() => setStudentFeedback(f => ({...f, perceivedStars: s}))} className={'text-lg ' + (s <= studentFeedback.perceivedStars ? 'text-amber-400' : 'text-gray-300')}>★</button>)}</div>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Submit a hint (optional):</p>
-              <textarea value={studentFeedback.submittedHint} onChange={e => setStudentFeedback(f => ({...f, submittedHint: e.target.value}))} rows={2} className="w-full px-3 py-2 border rounded text-sm" placeholder="Your suggested hint..." />
-            </div>
-            <div className="flex gap-2">
-              <button onClick={submitStudentFeedback} disabled={submittingFeedback} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">{submittingFeedback ? '...' : 'Submit'}</button>
-              <button onClick={() => { setShowStudentFeedback(false); router.push('/problems'); }} className="px-3 py-1 bg-gray-200 rounded text-sm">Skip</button>
-            </div>
-          </div>
-        )}
+        
+        
 
         {!isPassed && !isRevealed && !isRead && (
           <>
