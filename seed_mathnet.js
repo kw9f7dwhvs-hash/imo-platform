@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = 'imo_problems.json';
 
 async function main() {
-  const { PrismaClient } = require('@prisma/client');
+  const { PrismaClient } = require(@prisma/client);
   const checkPrisma = new PrismaClient();
   const existingCount = await checkPrisma.problem.count();
   if (existingCount > 0) {
