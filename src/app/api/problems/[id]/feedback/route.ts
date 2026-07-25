@@ -9,20 +9,28 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = parseInt((session.user as any).id);
   const { perceivedStars, submittedHint } = await req.json();
-  const sub = await prisma.submission.findFirst({ where: { problemId: parseInt(params.id), studentId: userId }, orderBy: { createdAt: 'desc' } });
-  if (!sub) return NextResponse.json({ error: 'No submission' }, { status: 404 });
-  await prisma.studentFeedback.upsert({
-    where: { submissionId: sub.id },
-    update: { perceivedStars, submittedHint },
-    create: { submissionId: sub.id, perceivedStars, submittedHint },
-  });
-  if (submittedHint) {
-    const problem = await prisma.problem.findUnique({ where: { id: parseInt(params.id) } });
-    const hasHints = problem?.hint1Text || problem?.hint2Text || problem?.hint3Text;
-    await prisma.hintPool.create({
-      data: { problemId: parseInt(params.id), hintNumber: hasHints ? 0 : 1, hintText: submittedHint, status: hasHints ? 'standby' : 'active', submittedBy: userId },
-    });
-    if (!hasHints) await prisma.problem.update({ where: { id: parseInt(params.id) }, data: { hint1Text: submittedHint } });
+  const problem = await prisma.problem.findUnique({ where: { id: parseInt(params.id) } });
+  if (!problem) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  // Build message body
+  let body = '';
+  if (perceivedStars) {
+    body += 'Perceived difficulty: ' + '★'.repeat(perceivedStars) + '\n\n';
   }
+  if (submittedHint) {
+    body += 'Suggested hint:\n' + submittedHint + '\n\n';
+  }
+  body += '---\nProblem: ' + (problem?.title || '#' + params.id) + ' (ID: ' + params.id + ')' + '\nCategory: ' + (problem?.categoryId || '?') + ' | ★' + (problem?.difficultyId || '?');
+
+  await prisma.message.create({
+    data: {
+      fromUserId: userId,
+      toUserId: 1,
+      subject: (perceivedStars ? '★'.repeat(perceivedStars) + ' ' : '') + (problem?.title || '#' + params.id) + ' ' + (submittedHint ? '[hint]' : '[rating]'),
+      body: body,
+      coins: 0,
+    },
+  });
+
   return NextResponse.json({ ok: true });
 }

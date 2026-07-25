@@ -19,7 +19,6 @@ model User {
   xpLogs       XpLog[]
   redos        Redo[]
   sentMessages     Message[]     @relation("SentMessages")
-  hintPoolEntries HintPool[]
   receivedMessages Message[]     @relation("ReceivedMessages")
   wallet       Wallet?
   transactions Transaction[]
@@ -71,7 +70,6 @@ model Problem {
   submissions    Submission[]
   redos          Redo[]
   xpLogs         XpLog[]
-  hintPoolEntries HintPool[]
 
   @@map("problems")
 }
@@ -141,44 +139,17 @@ model Redo {
 
 
 
-model HintFeedback {
-  id             Int      @id @default(autoincrement())
-  submissionId   Int      @map("submission_id")
-  hintNumber     Int      @map("hint_number")
-  useful         Boolean  @default(false)
-  revealedAnswer Boolean  @default(false) @map("revealed_answer")
-  createdAt      DateTime @default(now()) @map("created_at")
-  submission     Submission @relation(fields: [submissionId], references: [id])
-  @@map("hint_feedback")
-}
 
-model StudentFeedback {
-  id             Int      @id @default(autoincrement())
-  submissionId   Int      @unique @map("submission_id")
-  perceivedStars Int?     @map("perceived_stars")
-  submittedHint  String?  @map("submitted_hint")
-  createdAt      DateTime @default(now()) @map("created_at")
-  submission     Submission @relation(fields: [submissionId], references: [id])
-  @@map("student_feedback")
-}
 
-model HintPool {
-  id           Int      @id @default(autoincrement())
-  problemId    Int      @map("problem_id")
-  hintNumber   Int      @map("hint_number")
-  hintText     String   @map("hint_text")
-  status       String   @default("standby")
-  submittedBy  Int      @map("submitted_by")
-  createdAt    DateTime @default(now()) @map("created_at")
-  problem      Problem  @relation(fields: [problemId], references: [id])
-  submitter    User     @relation(fields: [submittedBy], references: [id])
-  @@map("hint_pool")
-}
+
+
+
 
 model Message {
   id         Int      @id @default(autoincrement())
   fromUserId  Int      @map("from_user_id")
   toUserId    Int      @map("to_user_id")
+  type       String   @default("general")
   subject    String
   body       String?
   coins      Int      @default(0)

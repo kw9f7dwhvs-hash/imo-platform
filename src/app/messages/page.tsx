@@ -4,6 +4,7 @@ import AuthGuard from '@/components/AuthGuard';
 
 export default function MessagesPage() {
   const [box, setBox] = useState('inbox');
+  const [msgFilter, setMsgFilter] = useState('all');
   const [msgs, setMsgs] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [composing, setComposing] = useState(false);
@@ -28,7 +29,7 @@ export default function MessagesPage() {
       body: JSON.stringify(form),
     });
     const data = await r.json();
-    if (r.ok) { setComposing(false); setForm({ toUserId: '', subject: '', body: '', coins: '0' }); setRefresh(r => r + 1); }
+    if (r.ok) { setComposing(false); setForm({ toUserId: '', subject: '', body: '', coins: '0', type: 'general' }); setRefresh(r => r + 1); }
     else alert('Failed: ' + (data.error || 'unknown'));
   };
 
@@ -51,18 +52,24 @@ export default function MessagesPage() {
         <div className="flex gap-2">
           <button onClick={() => setBox('inbox')} className={'px-3 py-1 rounded-lg text-sm ' + (box === 'inbox' ? 'bg-blue-600 text-white' : 'bg-gray-100')}>Inbox</button>
           <button onClick={() => setBox('sent')} className={'px-3 py-1 rounded-lg text-sm ' + (box === 'sent' ? 'bg-blue-600 text-white' : 'bg-gray-100')}>Sent</button>
+          <div className="flex gap-1 ml-4">
+            {['all','general','bug','hint'].map(t => (
+              <button key={t} onClick={() => setMsgFilter(t)} className={"px-2 py-1 text-xs rounded " + (msgFilter === t ? "bg-gray-300" : "bg-gray-100")}>{t}</button>
+            ))}
+          </div> className={'px-3 py-1 rounded-lg text-sm ' + (box === 'sent' ? 'bg-blue-600 text-white' : 'bg-gray-100')}>Sent</button>
         </div>
 
         {composing && (
           <div className="bg-white p-4 rounded-lg border space-y-3">
             <h2 className="font-semibold">New Message</h2>
-            <select value={form.toUserId} onChange={e => setForm(f => ({...f, toUserId: e.target.value}))} className="w-full px-3 py-2 border rounded-lg text-sm">
+            <select value={form.toUserId} onChange={e => setForm(f => ({...f, toUserId: e.target.value, type: f.type || 'general'}))} className="w-full px-3 py-2 border rounded-lg text-sm">
               <option value="">Select recipient...</option>
               {(users || []).map((u: any) => (
                 <option key={u.id} value={u.id}>{u.username}</option>
               ))}
             </select>
-            <input type="text" placeholder="Subject" value={form.subject} onChange={e => setForm(f => ({...f, subject: e.target.value}))} className="w-full px-3 py-2 border rounded-lg text-sm" />
+            <div className="flex gap-2"><select value={form.type || "general"} onChange={e => setForm(f => ({...f, type: e.target.value}))} className="px-3 py-2 border rounded-lg text-sm"><option value="general">General</option><option value="bug">Bug Report</option><option value="hint">Hint</option></select>
+            <input type="text" placeholder="Subject" value={form.subject} onChange={e => setForm(f => ({...f, subject: e.target.value}))} className="flex-1 px-3 py-2 border rounded-lg text-sm" /></div>
             <textarea placeholder="Message" value={form.body} onChange={e => setForm(f => ({...f, body: e.target.value}))} rows={4} className="w-full px-3 py-2 border rounded-lg text-sm" />
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-500">Coins to send:</label>
@@ -76,7 +83,7 @@ export default function MessagesPage() {
         )}
 
         <div className="space-y-2">
-          {msgs.map(msg => (
+          {(msgFilter === 'all' ? msgs : msgs.filter(m => m.type === msgFilter)).map(msg => (
             <div key={msg.id} onClick={() => handleRead(msg)}
               className={'bg-white p-3 rounded-lg border cursor-pointer hover:shadow-sm ' + (!msg.readAt && box === 'inbox' ? 'border-l-4 border-l-blue-500 font-medium' : '')}>
               <div className="flex justify-between">
@@ -85,7 +92,8 @@ export default function MessagesPage() {
               </div>
               <p className="text-xs text-gray-500 mt-1">
                 {box === 'inbox' ? 'From: ' + (msg.fromUser?.username || '?') : 'To: ' + (msg.toUser?.username || '?')}
-                {msg.coins > 0 && <span className="text-green-600 ml-2">+{msg.coins} coins</span>}
+                {msg.coins > 0 && <span className="text-green-600 ml-2">+{msg.coins} coins</span>
+              <span className={"ml-2 text-xs px-1 rounded " + (msg.type === 'bug' ? 'bg-red-100 text-red-600' : msg.type === 'hint' ? 'bg-amber-100 text-amber-600' : 'bg-gray-100')}>{msg.type}</span>}
               </p>
             </div>
           ))}

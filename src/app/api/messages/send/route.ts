@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const senderId = parseInt((session.user as any).id);
   const isAdmin = (session.user as any).role === 'admin';
-  const { toUserId: rawTo, subject, body, coins } = await req.json();
+  const { toUserId: rawTo, subject, body, coins, type } = await req.json();
   const toUserId = parseInt(rawTo);
 
   if (!toUserId || !subject) return NextResponse.json({ error: 'Recipient and subject required' }, { status: 400 });
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   const msg = await prisma.message.create({
-    data: { fromUserId: senderId, toUserId, subject, body, coins: coinAmount },
+    data: { fromUserId: senderId, toUserId, type: type || 'general', subject, body, coins: coinAmount },
   });
   return NextResponse.json(msg);
 }

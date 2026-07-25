@@ -35,7 +35,7 @@ async function main() {
   for (const p of problems) {
     await prisma.problem.create({
       data: {
-        title: p.year + ' IMOSL',
+        title: p.year + 'IMOSL' + p.category + p.num,
         categoryId: p.category,
         difficultyId: p.star,
         problemImages: '[]',
