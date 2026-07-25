@@ -31,6 +31,16 @@ export async function GET(req: Request) {
   })));
 }
 
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user as any).role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { id, active } = await req.json();
+    await prisma.problem.update({ where: { id }, data: { active } });
+    return NextResponse.json({ ok: true, id, active });
+  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

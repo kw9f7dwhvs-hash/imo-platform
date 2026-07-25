@@ -61,6 +61,7 @@ export async function GET(req: Request) {
   // Build query for problems
   const where: any = {};
   if (category) where.categoryId = category;
+  where.active = true;
   if (difficultyMin || difficultyMax) {
     if (!where.difficultyId) where.difficultyId = {};
     if (difficultyMin) where.difficultyId.gte = parseInt(difficultyMin);

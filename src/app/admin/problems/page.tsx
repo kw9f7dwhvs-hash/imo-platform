@@ -56,20 +56,43 @@ export default function AdminProblemsPage() {
           <p className="text-gray-500">No problems yet.</p>
         ) : (
           <div className="bg-white rounded-lg border">
-            {problems.map(p => (
-              <div key={p.id} className="flex items-center justify-between p-4 border-b last:border-b-0">
-                <div>
-                  <p className="font-medium">{p.title}</p>
-                  <p className="text-sm text-gray-500">
-                    {p.category?.displayNameCn || p.categoryId} | {p.difficultyTier?.name} | {new Date(p.createdAt).toLocaleDateString()}
-                  </p>
+            {problems.map(p => {
+              const done = (p.studentStats || []).filter((s: any) => s.status === 'passed');
+              const working = (p.studentStats || []).filter((s: any) => s.status === 'pending' || s.status === 'needs_clarification' || s.status === 'needs_correction' || s.status === 'retry');
+              const viewed = (p.studentStats || []).filter((s: any) => s.status === 'revealed' || s.status === 'answer_read');
+              const isActive = p.active !== false;
+              return (
+              <div key={p.id} className={"p-4 border-b last:border-b-0 " + (isActive ? '' : 'bg-gray-50')}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <input type="checkbox" checked={isActive} onChange={async () => {
+                      await fetch('/api/admin/problems', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: p.id, active: !isActive }),
+                      });
+                      window.location.reload();
+                    }} className="w-4 h-4" title={isActive ? 'Active - students can see this' : 'Inactive - hidden from students'} />
+                    <div>
+                      <p className={"font-medium " + (isActive ? '' : 'text-gray-400 line-through')}>{p.title}</p>
+                      <p className="text-sm text-gray-500">
+                        {p.category?.displayNameCn || p.categoryId} | {p.difficultyTier?.name} | {new Date(p.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <Link href={'/admin/problems/' + p.id + '/edit'} className="text-sm text-blue-500 hover:text-blue-700">Edit</Link>
+                    <button onClick={() => handleDelete(p.id)} className="text-sm text-red-500 hover:text-red-700">Delete</button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Link href={'/admin/problems/' + p.id + '/edit'} className="text-sm text-blue-500 hover:text-blue-700">Edit</Link>
-                  <button onClick={() => handleDelete(p.id)} className="text-sm text-red-500 hover:text-red-700">Delete</button>
+                <div className="mt-2 flex gap-4 text-xs">
+                  <span className="text-green-600">Passed: {done.length > 0 ? done.map((s: any) => s.username).join(', ') : 'none'}</span>
+                  <span className="text-amber-600">Working: {working.length > 0 ? working.map((s: any) => s.username).join(', ') : 'none'}</span>
+                  <span className="text-gray-400">Viewed: {viewed.length > 0 ? viewed.map((s: any) => s.username).join(', ') : 'none'}</span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
