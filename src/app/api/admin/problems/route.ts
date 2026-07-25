@@ -4,15 +4,25 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { saveUploadedFile } from '@/lib/upload';
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const user = session.user as any;
   if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+  const url = new URL(req.url);
+  const search = url.searchParams.get('search') || '';
+  const diffFilter = url.searchParams.get('difficulty') || '';
+  
+  const where: any = {};
+  if (diffFilter) where.difficultyId = parseInt(diffFilter);
+  if (search) where.title = { contains: search };
+  
   const problems = await prisma.problem.findMany({
+    where,
     include: { category: true, difficultyTier: true, creator: { select: { username: true } } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { id: 'desc' },
+    take: 200,
   });
 
   return NextResponse.json(problems.map((p: any) => ({

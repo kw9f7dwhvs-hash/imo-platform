@@ -5,6 +5,8 @@ import Link from 'next/link';
 
 export default function AdminProblemsPage() {
   const [problems, setProblems] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+  const [diffFilter, setDiffFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
   const fetchProblems = async () => {
@@ -39,6 +41,13 @@ export default function AdminProblemsPage() {
             <button onClick={handleClearAll} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200">Clear All</button>
             <Link href="/admin/problems/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">New</Link>
           </div>
+        </div>
+        <div className="flex gap-2">
+          <input type="text" placeholder="Search title..." value={search} onChange={e => setSearch(e.target.value)} className="px-3 py-1.5 border rounded-lg text-sm flex-1" />
+          <select value={diffFilter} onChange={e => setDiffFilter(e.target.value)} className="px-3 py-1.5 border rounded-lg text-sm">
+            <option value="">All Stars</option>
+            <option value="1">★1</option><option value="2">★2</option><option value="3">★3</option><option value="4">★4</option><option value="5">★5</option>
+          </select>
         </div>
         {loading ? <p className="text-gray-400">Loading...</p> : problems.length === 0 ? (
           <p className="text-gray-500">No problems yet.</p>
