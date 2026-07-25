@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = 'imo_problems.json';
 
 async function main() {
-  const { PrismaClient } = require(@prisma/client);
+  const { PrismaClient } = require('@prisma/client');
   const checkPrisma = new PrismaClient();
   const existingCount = await checkPrisma.problem.count();
   if (existingCount > 0) {
@@ -25,7 +25,6 @@ async function main() {
     problems = JSON.parse(fs.readFileSync(path, 'utf-8'));
   }
 
-  const { PrismaClient } = require('@prisma/client');
   const prisma = new PrismaClient();
 
   // Clear old data in order (child tables first)
