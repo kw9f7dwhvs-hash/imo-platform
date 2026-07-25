@@ -21,8 +21,7 @@ export async function GET(req: Request) {
   const problems = await prisma.problem.findMany({
     where,
     include: { category: true, difficultyTier: true, creator: { select: { username: true } } },
-    orderBy: { id: 'desc' },
-    take: 200,
+    orderBy: { id: 'desc' }
   });
 
   return NextResponse.json(problems.map((p: any) => ({
