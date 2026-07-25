@@ -14,21 +14,68 @@ export async function GET(req: Request) {
   const search = url.searchParams.get('search') || '';
   const diffFilter = url.searchParams.get('difficulty') || '';
   
-  const where: any = {};
+  const where: any = { active: true };
   if (diffFilter) where.difficultyId = parseInt(diffFilter);
   if (search) where.title = { contains: search };
   
   const problems = await prisma.problem.findMany({
     where,
-    include: { category: true, difficultyTier: true, creator: { select: { username: true } } },
-    orderBy: { id: 'desc' }
+    include: {
+      category: true,
+      difficultyTier: true,
+      creator: { select: { username: true } },
+      submissions: {
+        include: { student: { select: { id: true, username: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+    orderBy: { id: 'desc' },
   });
 
-  return NextResponse.json(problems.map((p: any) => ({
-    id: p.id, title: p.title, categoryId: p.categoryId, difficultyId: p.difficultyId,
-    category: p.category, difficultyTier: p.difficultyTier,
-    createdAt: p.createdAt.toISOString(), creator: p.creator.username,
-  })));
+  const result = problems.map(p => {
+    const lastSub = new Map();
+    for (const sub of p.submissions) {
+      if (!lastSub.has(sub.studentId)) lastSub.set(sub.studentId, sub);
+    }
+    const studentStats = Array.from(lastSub.values()).map(sub => ({
+      username: sub.student?.username,
+      status: sub.status,
+      grade: sub.grade,
+    }));
+    const { submissions, ...rest } = p;
+    return { ...rest, studentStats };
+  });
+  
+  // Also include inactive problems for admin management
+  const allProblems = await prisma.problem.findMany({
+    include: {
+      category: true,
+      difficultyTier: true,
+      creator: { select: { username: true } },
+      submissions: {
+        include: { student: { select: { id: true, username: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+    orderBy: { id: 'desc' },
+    take: 500,
+  });
+  
+  const allResult = allProblems.map(p => {
+    const lastSub = new Map();
+    for (const sub of p.submissions) {
+      if (!lastSub.has(sub.studentId)) lastSub.set(sub.studentId, sub);
+    }
+    const studentStats = Array.from(lastSub.values()).map(sub => ({
+      username: sub.student?.username,
+      status: sub.status,
+      grade: sub.grade,
+    }));
+    const { submissions, ...rest } = p;
+    return { ...rest, studentStats };
+  });
+  
+  return NextResponse.json(allResult);
 }
 
 export async function PATCH(req: Request) {
@@ -39,6 +86,25 @@ export async function PATCH(req: Request) {
     await prisma.problem.update({ where: { id }, data: { active } });
     return NextResponse.json({ ok: true, id, active });
   } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user as any).role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { oldTitles } = await req.json();
+    if (oldTitles) {
+      // Delete problems with old title format (no category+number)
+      const deleted = await prisma.problem.deleteMany({
+        where: { title: { in: oldTitles } },
+      });
+      return NextResponse.json({ ok: true, deleted: deleted.count });
+    }
+    // Delete by id
+    const { id } = await req.json();
+    await prisma.problem.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
+  } catch { return NextResponse.json({ error: 'Failed' }, { status: 500 }); }
 }
 
 export async function POST(req: Request) {
