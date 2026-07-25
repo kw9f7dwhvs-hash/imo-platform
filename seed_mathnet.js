@@ -37,6 +37,7 @@ async function main() {
         difficultyId: p.star,
         problemImages: '[]',
         problemText: p.text,
+        answerText: (p.solutions && p.solutions.length > 0) ? p.solutions.join("\n\n---\n\n") : null,
         answerImages: '[]',
         createdBy: 1,
       },
