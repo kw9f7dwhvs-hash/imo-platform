@@ -11,9 +11,21 @@ export async function POST(req: Request) {
   const { toUserId: rawTo, subject, body, coins, type } = await req.json();
   const toUserId = parseInt(rawTo);
 
-  if (!toUserId || !subject) return NextResponse.json({ error: 'Recipient and subject required' }, { status: 400 });
+  if (!subject) return NextResponse.json({ error: 'Subject required' }, { status: 400 });
+  if (toUserId !== 0 && !toUserId) return NextResponse.json({ error: 'Recipient required' }, { status: 400 });
 
   // Handle coin transfer
+  // Handle broadcast to all
+  if (toUserId === 0 && isAdmin) {
+    const allStudents = await prisma.user.findMany({ where: { role: 'student' }, select: { id: true } });
+    for (const s of allStudents) {
+      await prisma.message.create({
+        data: { fromUserId: senderId, toUserId: s.id, type: type || 'general', subject, body, coins: 0 },
+      });
+    }
+    return NextResponse.json({ ok: true, broadcastTo: allStudents.length });
+  }
+
   let coinAmount = parseInt(coins) || 0;
   if (coinAmount > 0 && !isAdmin) {
     // Deduct from sender (non-admin)

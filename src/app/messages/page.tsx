@@ -54,7 +54,7 @@ export default function MessagesPage() {
           <h2 className="font-semibold">New Message</h2>
           <select value={form.toUserId} onChange={e => setForm(f => ({...f, toUserId: e.target.value}))} className="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">Select recipient...</option>
-            {(isAdmin ? (users || []) : (users || []).filter(u => u.role === 'admin' || u.role === undefined)).map(u => <option key={u.id} value={u.id}>{u.username}{u.role === 'admin' ? ' (admin)' : ''}</option>)}
+            {isAdmin && <option value="0">📢 All Students</option>}{(isAdmin ? (users || []) : (users || []).filter(u => u.role === 'admin' || u.role === undefined)).map(u => <option key={u.id} value={u.id}>{u.username}{u.role === 'admin' ? ' (admin)' : ''}</option>)}
           </select>
           <div className="flex gap-2">
             <select value={form.type} onChange={e => setForm(f => ({...f, type: e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">

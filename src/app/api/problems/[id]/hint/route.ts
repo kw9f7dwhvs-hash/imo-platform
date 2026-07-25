@@ -15,6 +15,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     orderBy: { createdAt: 'desc' },
   });
 
+  // If student has submitted a real answer, lock hints
+  const hasSubmission = await prisma.submission.findFirst({
+    where: { problemId, studentId, status: { in: ["pending", "needs_clarification", "needs_correction", "retry"] } },
+  });
+  if (hasSubmission) {
+    return NextResponse.json({ error: "You have already submitted an answer. Cannot request hints." }, { status: 400 });
+  }
+
   if (!sub) {
     // Create a submission record if none exists
     sub = await prisma.submission.create({

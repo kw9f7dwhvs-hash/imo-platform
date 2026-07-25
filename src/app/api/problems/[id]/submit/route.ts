@@ -14,6 +14,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const problem = await prisma.problem.findUnique({ where: { id: problemId } });
   if (!problem) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+  // Check wallet
+  const walletCheck = await prisma.wallet.findUnique({ where: { userId: studentId } });
+  if (!walletCheck || walletCheck.balance < 10) {
+    return NextResponse.json({ error: "Insufficient coins (need 10)" }, { status: 400 });
+  }
+
   let imagePath: string | null = null;
   let solutionText: string | null = null;
 
