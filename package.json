@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx prisma generate && npx prisma db push --accept-data-loss && node prisma/seed.js && next build",
     "start": "sh -c \"echo DB_INIT_START; npx prisma db push --accept-data-loss 2>&1; echo SEED_START; node prisma/seed.js 2>&1; echo SERVER_START; next start -p $PORT\"",
     "db:push": "npx prisma db push",
     "db:seed": "node prisma/seed.js",
