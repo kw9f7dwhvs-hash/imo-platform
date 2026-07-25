@@ -11,8 +11,8 @@ export default function AdminPage() {
           <Link href="/admin/problems/new" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">New Problem</h2><p className="text-sm text-gray-500 mt-1">Upload a new problem</p></Link>
           <Link href="/admin/submissions" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">Grade</h2><p className="text-sm text-gray-500 mt-1">Review & grade submissions</p></Link>
           <Link href="/admin/stats" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">Stats</h2><p className="text-sm text-gray-500 mt-1">Student progress & logs</p></Link>
-          <Link href="/admin/hints" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">Hints Pool</h2><p className="text-sm text-gray-500 mt-1">Approve or delete submitted hints</p></Link>
           <Link href="/admin/wallets" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">Wallets</h2><p className="text-sm text-gray-500 mt-1">Manage coins & transactions</p></Link>
+          <Link href="/admin/hints" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">Hints Pool</h2><p className="text-sm text-gray-500 mt-1">Approve student-submitted hints</p></Link></p></Link>
           <Link href="/admin/users" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">Users</h2><p className="text-sm text-gray-500 mt-1">Manage accounts & passwords</p></Link>
           <Link href="/messages" className="p-6 bg-white rounded-lg border hover:shadow-md"><h2 className="font-semibold text-lg">Messages</h2><p className="text-sm text-gray-500 mt-1">Internal messaging system</p></Link>
         </div>

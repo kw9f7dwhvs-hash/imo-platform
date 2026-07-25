@@ -17,11 +17,7 @@ export default function ProblemDetailPage() {
   const [msg, setMsg] = useState('');
   const [wallet, setWallet] = useState<any>(null);
   const [showHintFeedback, setShowHintFeedback] = useState(false);
-  const [hintFeedback, setHintFeedback] = useState({ hintNumber: 1, useful: false, revealedAnswer: false });
-  const [showStudentFeedback, setShowStudentFeedback] = useState(false);
-  const [studentFeedback, setStudentFeedback] = useState({ perceivedStars: 3, submittedHint: '' });
-  const [submittingFeedback, setSubmittingFeedback] = useState(false);
-
+        
   const fetchProblem = useCallback(async () => {
     const r = await fetch('/api/problems/' + id);
     if (r.ok) setProblem(await r.json());
@@ -58,25 +54,9 @@ export default function ProblemDetailPage() {
     else setMsg((await r.json()).error || 'Request failed');
   };
 
-  const submitHintFeedback = async () => {
-    setSubmittingFeedback(true);
-    await fetch('/api/problems/' + id + '/hint-feedback', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(hintFeedback),
-    });
-    setShowHintFeedback(false);
-    setSubmittingFeedback(false);
-  };
+  
 
-  const submitStudentFeedback = async () => {
-    setSubmittingFeedback(true);
-    const r = await fetch('/api/problems/' + id + '/feedback', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(studentFeedback),
-    });
-    if (r.ok) setShowStudentFeedback(false);
-    setSubmittingFeedback(false);
-  };
+  
 
   if (loading) return <AuthGuard><p className="text-gray-400">Loading...</p></AuthGuard>;
   if (!problem) return <AuthGuard><p className="text-red-500">Problem not found</p></AuthGuard>;
