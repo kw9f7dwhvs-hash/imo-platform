@@ -64,7 +64,6 @@ export async function DELETE(req: Request) {
     await prisma.xpLog.deleteMany({ where: { problemId: { in: ids } } });
     await prisma.redo.deleteMany({ where: { problemId: { in: ids } } });
     await prisma.submission.deleteMany({ where: { problemId: { in: ids } } });
-    await prisma.userXp.deleteMany({ where: { problemId: { in: ids } } });
     const deleted = await prisma.problem.deleteMany({ where: { id: { in: ids } } });
     return NextResponse.json({ ok: true, deleted: deleted.count });
   } catch (e: any) {
