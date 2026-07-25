@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && npx prisma db push --accept-data-loss && node prisma/seed.js && node seed_mathnet.js && node seed_usamo.js && next build",
+    "build": "DATABASE_URL=${DATABASE_URL:-postgresql://d:d@localhost:5432/d} npx prisma generate && DATABASE_URL=${DATABASE_URL:-postgresql://d:d@localhost:5432/d} npx prisma db push --accept-data-loss && DATABASE_URL=${DATABASE_URL:-postgresql://d:d@localhost:5432/d} node prisma/seed.js && DATABASE_URL=${DATABASE_URL:-postgresql://d:d@localhost:5432/d} node seed_import.js imo && DATABASE_URL=${DATABASE_URL:-postgresql://d:d@localhost:5432/d} node seed_import.js usamo && next build",
     "start": "sh -c \"echo DB_INIT_START; npx prisma db push --accept-data-loss 2>&1; echo SEED_START; node prisma/seed.js 2>&1; echo SERVER_START; next start -p $PORT\"",
     "db:push": "npx prisma db push",
     "db:seed": "node prisma/seed.js",
