@@ -94,10 +94,24 @@ async function main() {
     process.exit(1);
   }
   
-  // Only add NEW problems (by title)
+  // Add new OR update existing problems that lack answers
   let added = 0;
+  let updated = 0;
   for (const p of problems) {
-    if (existingTitles.has(p.title)) continue;
+    if (existingTitles.has(p.title)) {
+      // Update answerText if missing
+      if (p.solutions && p.solutions.length > 0) {
+        const existing = await prisma.problem.findFirst({ where: { title: p.title } });
+        if (existing && !existing.answerText) {
+          await prisma.problem.update({
+            where: { id: existing.id },
+            data: { answerText: p.solutions.join('\n\n---\n\n') },
+          });
+          updated++;
+        }
+      }
+      continue;
+    }
     
     const starFn = STAR_RULES[source] || ((n) => 1);
     const star = starFn(p.num);
@@ -118,7 +132,7 @@ async function main() {
     added++;
   }
   
-  console.log(`✅ Added: ${added}, Skipped: ${problems.length - added}`);
+  console.log(`✅ Added: ${added}, Updated answers: ${updated}, Skipped: ${problems.length - added - updated}`);
   await prisma.$disconnect();
 }
 
