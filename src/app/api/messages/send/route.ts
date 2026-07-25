@@ -49,15 +49,6 @@ export async function POST(req: Request) {
   }
 
   // Process coin transfer for non-broadcast
-  if (coinAmount > 0 && toUserId !== 0) {
-    const recipientWallet = await prisma.wallet.findUnique({ where: { userId: toUserId } });
-    if (recipientWallet) {
-      await prisma.wallet.update({ where: { userId: toUserId }, data: { balance: { increment: coinAmount } } });
-    } else {
-      await prisma.wallet.create({ data: { userId: toUserId, balance: 100 + coinAmount } });
-    }
-  }
-
   const msg = await prisma.message.create({
     data: { fromUserId: senderId, toUserId, type: type || 'general', subject, body, coins: coinAmount },
   });

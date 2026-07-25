@@ -4,6 +4,15 @@ const fs = require('fs');
 const path = 'imo_problems.json';
 
 async function main() {
+  const { PrismaClient } = require('@prisma/client');
+  const checkPrisma = new PrismaClient();
+  const existingCount = await checkPrisma.problem.count();
+  if (existingCount > 0) {
+    console.log('Problems already exist (' + existingCount + '), skipping seed to preserve data.');
+    await checkPrisma.$disconnect();
+    return;
+  }
+  await checkPrisma.$disconnect();
   let problems;
   
   if (fs.existsSync(path)) {
