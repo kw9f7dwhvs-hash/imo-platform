@@ -40,7 +40,7 @@ async function main() {
       results.push({
         slug: r[0], year: r[2], category: CAT_MAP[r[4]] || 'A', num: r[6], star: star(r[6]),
         text: full.problem_markdown || "",
-        solutions: full.solutions_markdown || []'',
+        solutions: full.solutions_markdown || [],
       });
     } catch(e) { console.log('Failed: ' + r[0]); }
     if ((i + 1) % 25 === 0) console.log('  ' + (i + 1) + '/' + imoSL.length);
