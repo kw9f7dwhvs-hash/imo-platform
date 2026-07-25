@@ -45,6 +45,7 @@ async function main() {
     // IMO Shortlist - from cached file or fetch
     if (fs.existsSync('imo_problems.json')) {
       problems = JSON.parse(fs.readFileSync('imo_problems.json', 'utf-8'));
+      for (const p2 of problems) { if (!p2.title) p2.title = String(p2.year) + 'IMOSL'; }
       console.log(`Loaded ${problems.length} problems from imo_problems.json`);
     } else {
       console.log('Fetching IMO Shortlist from mathnet...');
@@ -63,6 +64,7 @@ async function main() {
           });
         } catch(e) { console.log(`  Failed: ${r[0]}`); }
       }
+      for (const p2 of problems) { if (!p2.title) p2.title = String(p2.year) + 'IMOSL'; }
       fs.writeFileSync('imo_problems.json', JSON.stringify(problems));
       console.log('Saved to imo_problems.json');
     }
@@ -94,6 +96,9 @@ async function main() {
     process.exit(1);
   }
   
+  // Ensure all problems have titles
+  for (const p2 of problems) { if (!p2.title) p2.title = String(p2.year) + "IMOSL"; }
+
   // Add new OR update existing problems that lack answers
   let added = 0;
   let updated = 0;
