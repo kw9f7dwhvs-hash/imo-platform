@@ -74,11 +74,14 @@ export default function AdminProblemsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <input type="checkbox" checked={isActive} onChange={async () => {
-                      await fetch('/api/admin/problems', {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: p.id, active: !isActive }),
-                      });
+                      try {
+                        const res = await fetch('/api/admin/problems', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ id: p.id, active: !isActive }),
+                        });
+                        if (!res.ok) alert('Toggle failed: ' + (await res.json()).error);
+                      } catch(e: any) { alert('Network error: ' + e.message); }
                       window.location.reload();
                     }} className="w-4 h-4" title={isActive ? 'Active - students can see this' : 'Inactive - hidden from students'} />
                     <div>
