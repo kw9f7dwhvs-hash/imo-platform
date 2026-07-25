@@ -49,3 +49,25 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ created: results.length, problems: results });
 }
+export async function DELETE(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = session.user as any;
+  if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+  try {
+    const { ids } = await req.json();
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'No IDs provided' }, { status: 400 });
+    }
+    // Delete related records first
+    await prisma.xpLog.deleteMany({ where: { problemId: { in: ids } } });
+    await prisma.redo.deleteMany({ where: { problemId: { in: ids } } });
+    await prisma.submission.deleteMany({ where: { problemId: { in: ids } } });
+    await prisma.userXp.deleteMany({ where: { problemId: { in: ids } } });
+    const deleted = await prisma.problem.deleteMany({ where: { id: { in: ids } } });
+    return NextResponse.json({ ok: true, deleted: deleted.count });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}

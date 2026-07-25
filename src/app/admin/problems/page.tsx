@@ -1,55 +1,94 @@
-'use client';
-import { useState, useEffect } from 'react';
-import AuthGuard from '@/components/AuthGuard';
-import Link from 'next/link';
+  'use client';
+  import { useState, useEffect } from 'react';
+  import AuthGuard from '@/components/AuthGuard';
+  import Link from 'next/link';
 
-export default function AdminProblemsPage() {
-  const [problems, setProblems] = useState<any[]>([]);
-  const [search, setSearch] = useState('');
-  const [diffFilter, setDiffFilter] = useState('');
-  const [loading, setLoading] = useState(true);
+  export default function AdminProblemsPage() {
+    const [problems, setProblems] = useState<any[]>([]);
+    const [search, setSearch] = useState('');
+    const [diffFilter, setDiffFilter] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
-  const fetchProblems = async () => {
-    setLoading(true);
-    const p = new URLSearchParams();
-    if (search) p.set('search', search);
-    if (diffFilter) p.set('difficulty', diffFilter);
-    const r = await fetch('/api/admin/problems?' + p.toString());
-    if (r.ok) setProblems(await r.json());
-    setLoading(false);
-  };
+    const fetchProblems = async () => {
+      setLoading(true);
+      const p = new URLSearchParams();
+      if (search) p.set('search', search);
+      if (diffFilter) p.set('difficulty', diffFilter);
+      const r = await fetch('/api/admin/problems?' + p.toString());
+      if (r.ok) setProblems(await r.json());
+      setLoading(false);
+    };
 
-  useEffect(() => { fetchProblems(); }, [search, diffFilter]);
+    useEffect(() => { fetchProblems(); }, [search, diffFilter]);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this problem?')) return;
-    await fetch('/api/admin/problems/' + id, { method: 'DELETE' });
-    setProblems(p => p.filter(x => x.id !== id));
-  };
+    const handleDelete = async (id: number) => {
+      if (!confirm('Delete this problem?')) return;
+      await fetch('/api/admin/problems/' + id, { method: 'DELETE' });
+      setProblems(p => p.filter(x => x.id !== id));
+    };
 
-  const handleClearAll = async () => {
-    if (!confirm('Delete ALL problems? This cannot be undone!')) return;
-    if (!confirm('Are you sure? All students\' progress will be lost.')) return;
-    const r = await fetch('/api/admin/problems/clear-all', { method: 'POST' });
-    if (r.ok) { alert('All problems deleted!'); setProblems([]); }
-    else alert('Failed to clear');
-  };
+    const toggleSelect = (id: number) => {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    };
 
-  return (
-    <AuthGuard requiredRole="admin">
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Problems ({problems.length})</h1>
-          <div className="flex gap-2">
-            <button onClick={async () => { if (!confirm("Toggle all?")) return; const ids = problems.map(p => p.id); for (const id of ids) { try { await fetch("/api/admin/problems", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, active: false }) }); } catch(e) {} } window.location.reload(); }} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">Deactivate All</button>
-            <button onClick={async () => {
-              if (!confirm("Activate all?")) return;
-              for (const p of problems) {
-                try { await fetch("/api/admin/problems", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: p.id, active: true }) }); } catch(e) {}
-              }
-              window.location.reload();
-            }} className="px-4 py-2 bg-green-100 text-green-600 rounded-lg text-sm hover:bg-green-200">Activate All</button>
-            <button onClick={handleClearAll} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200">Clear All</button>
+    const selectAll = () => {
+      if (selectedIds.size === problems.length) {
+        setSelectedIds(new Set());
+      } else {
+        setSelectedIds(new Set(problems.map(p => p.id)));
+      }
+    };
+
+    const handleBatchDelete = async () => {
+      if (selectedIds.size === 0) return;
+      if (!confirm(`Delete ${selectedIds.size} selected problems? This cannot be undone!`)) return;
+      if (!confirm('Are you sure? All student progress on these problems will be lost.')) return;
+      const r = await fetch('/api/admin/problems/batch', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      if (r.ok) {
+        alert(`Deleted ${selectedIds.size} problems!`);
+        setSelectedIds(new Set());
+        fetchProblems();
+      } else {
+        alert('Failed to delete selected problems');
+      }
+    };
+
+    const handleClearAll = async () => {
+      if (!confirm('Delete ALL problems? This cannot be undone!')) return;
+      if (!confirm('Are you sure? All students\' progress will be lost.')) return;
+      const r = await fetch('/api/admin/problems/clear-all', { method: 'POST' });
+      if (r.ok) { alert('All problems deleted!'); setProblems([]); }
+      else alert('Failed to clear');
+    };
+
+    return (
+      <AuthGuard requiredRole="admin">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Problems ({problems.length})</h1>
+            <div className="flex gap-2">
+              {selectedIds.size > 0 && (
+                <button onClick={handleBatchDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">Delete Selected ({selectedIds.size})</button>
+              )}
+              <button onClick={async () => { if (!confirm("Toggle all?")) return; const ids = problems.map(p => p.id); for (const id of ids) { try { await fetch("/api/admin/problems", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, active: false }) }); } catch(e) {} } window.location.reload(); }} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">Deactivate All</button>
+              <button onClick={async () => {
+                if (!confirm("Activate all?")) return;
+                for (const p of problems) {
+                  try { await fetch("/api/admin/problems", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: p.id, active: true }) }); } catch(e) {}
+                }
+                window.location.reload();
+              }} className="px-4 py-2 bg-green-100 text-green-600 rounded-lg text-sm hover:bg-green-200">Activate All</button>
+              <button onClick={handleClearAll} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200">Clear All</button>
             <Link href="/admin/problems/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">New</Link>
           </div>
         </div>
@@ -64,6 +103,11 @@ export default function AdminProblemsPage() {
           <p className="text-gray-500">No problems yet.</p>
         ) : (
           <div className="bg-white rounded-lg border">
+            {/* Header row with select all */}
+            <div className="p-3 border-b bg-gray-50 flex items-center gap-3 text-sm font-medium text-gray-500">
+              <input type="checkbox" checked={selectedIds.size === problems.length && problems.length > 0} onChange={selectAll} className="w-4 h-4" title="Select all" />
+              <span>{selectedIds.size > 0 ? `${selectedIds.size} selected` : ''}</span>
+            </div>
             {problems.map(p => {
               const done = (p.studentStats || []).filter((s: any) => s.status === 'passed');
               const working = (p.studentStats || []).filter((s: any) => s.status === 'pending' || s.status === 'needs_clarification' || s.status === 'needs_correction' || s.status === 'retry');
@@ -73,6 +117,7 @@ export default function AdminProblemsPage() {
               <div key={p.id} className={"p-4 border-b last:border-b-0 " + (isActive ? '' : 'bg-gray-50')}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
+                    <input type="checkbox" checked={selectedIds.has(p.id)} onChange={() => toggleSelect(p.id)} className="w-4 h-4" title="Select for batch operation" />
                     <input type="checkbox" checked={isActive} onChange={async () => {
                       try {
                         const res = await fetch('/api/admin/problems', {
