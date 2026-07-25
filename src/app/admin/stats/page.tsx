@@ -128,6 +128,9 @@ export default function AdminStatsPage() {
                               <th className="text-left p-2 font-medium text-gray-600">Attempt</th>
                               <th className="text-left p-2 font-medium text-gray-600">Hints</th>
                               <th className="text-left p-2 font-medium text-gray-600">Date</th>
+<th className="text-left p-2 font-medium text-gray-600">Stars</th>
+                              <th className="text-left p-2 font-medium text-gray-600">Hint Submitted</th>
+                              <th className="text-left p-2 font-medium text-gray-600">Hint Feedback</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -144,6 +147,9 @@ export default function AdminStatsPage() {
                                 <td className="p-2 text-xs">#{sub.attemptCount}</td>
                                 <td className="p-2 text-xs">{sub.hintsUsed}/3</td>
                                 <td className="p-2 text-xs text-gray-400">{new Date(sub.createdAt).toLocaleDateString()}</td>
+<td className="p-2 text-xs">{sub.studentFeedback?.[0]?.perceivedStars ? '★'.repeat(sub.studentFeedback[0].perceivedStars) : '-'}</td>
+                              <td className="p-2 text-xs max-w-[150px] truncate" title={sub.studentFeedback?.[0]?.submittedHint || ''}>{sub.studentFeedback?.[0]?.submittedHint || '-'}</td>
+                              <td className="p-2 text-xs">{sub.hintFeedback?.length > 0 ? sub.hintFeedback.map((hf: any) => `H${hf.hintNumber}:${hf.useful ? '👍' : '👎'${hf.revealedAnswer ? '⚠️' : ''}`).join(', ') : '-'}</td>
                               </tr>
                             ))}
                           </tbody>
