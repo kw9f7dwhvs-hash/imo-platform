@@ -41,6 +41,7 @@ export default function AdminProblemsPage() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Problems ({problems.length})</h1>
           <div className="flex gap-2">
+            <button onClick={async () => { if (!confirm("Toggle all?")) return; const ids = problems.map(p => p.id); for (const id of ids) { try { await fetch("/api/admin/problems", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, active: false }) }); } catch(e) {} } window.location.reload(); }} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">Deactivate All</button>
             <button onClick={handleClearAll} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200">Clear All</button>
             <Link href="/admin/problems/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">New</Link>
           </div>
