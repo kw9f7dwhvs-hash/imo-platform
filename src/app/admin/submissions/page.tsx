@@ -35,6 +35,27 @@ export default function AdminSubmissionsPage() {
     setGrading(null);
   };
 
+  const handleUnpass = async (id: number) => {
+    if (!confirm('Unpass this submission? Student XP will be removed and status reverted to Needs Clarification.')) return;
+    setGrading(id);
+    const r = await fetch('/api/submissions/' + id + '/unpass', { method: 'POST' });
+    if (r.ok) {
+      setSubmissions(s => s.filter(x => x.id !== id));
+      setFeedback('');
+    } else {
+      const err = await r.json();
+      alert(err.error || 'Unpass failed');
+    }
+    setGrading(null);
+  };
+
+  const canUnpass = (sub: any) => {
+    if (!sub.gradedAt) return false;
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+    return (now - new Date(sub.gradedAt).getTime()) < oneDay;
+  };
+
   return (
     <AuthGuard requiredRole="admin">
       <div className="space-y-4">
@@ -107,6 +128,13 @@ export default function AdminSubmissionsPage() {
                 </div>
                 )}
                 <div className="flex gap-2">
+                  {filter === 'passed' && canUnpass(sub) && (
+                    <button onClick={() => handleUnpass(sub.id)}
+                      disabled={grading === sub.id}
+                      className="px-4 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm disabled:opacity-50 hover:bg-red-200">
+                      {grading === sub.id ? '...' : 'Unpass'}
+                    </button>
+                  )}
                   {[
                     { g: 'pass', label: 'Pass', cls: 'bg-green-600 hover:bg-green-700' },
                     { g: 'clarify', label: 'Clarify', cls: 'bg-blue-600 hover:bg-blue-700' },
