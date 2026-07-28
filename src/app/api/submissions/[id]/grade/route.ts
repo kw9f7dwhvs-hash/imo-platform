@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const user = session.user as any;
   if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const { grade, feedback } = await req.json();
+  const { grade, feedback, score } = await req.json();
   const adminId = parseInt(user.id);
   const submissionId = parseInt(params.id);
 
@@ -28,12 +28,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   await prisma.submission.update({
     where: { id: submissionId },
-    data: { grade, status: newStatus, feedback: feedback || null, gradedAt: new Date(), gradedBy: adminId },
+    data: { grade, status: newStatus, feedback: feedback || null, score: score ?? null, gradedAt: new Date(), gradedBy: adminId },
   });
 
   if (grade === 'pass') {
     const problem = sub.problem;
-    const xp = calculateFinalXp(problem.difficultyId, sub.hintsUsed, sub.attemptCount === 1);
+    const xp = calculateFinalXp(problem.difficultyId, sub.hintsUsed, sub.attemptCount === 1, score);
     const catId = problem.categoryId;
     const existing = await prisma.userXp.findUnique({
       where: { userId_categoryId: { userId: sub.studentId, categoryId: catId } },
@@ -48,7 +48,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     await prisma.xpLog.create({
       data: {
         userId: sub.studentId, problemId: problem.id, categoryId: catId,
-        baseXp: xp, hintMultiplier: sub.hintsUsed === 0 ? 1.0 : sub.hintsUsed === 1 ? 0.7 : sub.hintsUsed === 2 ? 0.4 : 0.1,
+        baseXp: Math.round(calculateFinalXp(problem.difficultyId, 0, true)), hintMultiplier: sub.hintsUsed === 0 ? 1.0 : sub.hintsUsed === 1 ? 0.7 : sub.hintsUsed === 2 ? 0.4 : 0.1,
         firstAttempt: sub.attemptCount === 1, finalXp: xp,
       },
     });

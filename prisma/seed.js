@@ -12,11 +12,11 @@ async function main() {
     await prisma.category.upsert({ where: { id: c.id }, update: c, create: c });
   }
   const tiers = [
-    { id: 1, name: '\u26051', xpValue: 10, problemCount: 14 },
-    { id: 2, name: '\u26052', xpValue: 30, problemCount: 25 },
-    { id: 3, name: '\u26053', xpValue: 90, problemCount: 25 },
-    { id: 4, name: '\u26054', xpValue: 270, problemCount: 25 },
-    { id: 5, name: '\u26055', xpValue: 810, problemCount: 36 },
+    { id: 1, name: '\u26051', xpValue: 14, problemCount: 14 },
+    { id: 2, name: '\u26052', xpValue: 28, problemCount: 25 },
+    { id: 3, name: '\u26053', xpValue: 56, problemCount: 25 },
+    { id: 4, name: '\u26054', xpValue: 112, problemCount: 25 },
+    { id: 5, name: '\u26055', xpValue: 224, problemCount: 36 },
   ];
   for (const t of tiers) {
     await prisma.difficultyTier.upsert({ where: { id: t.id }, update: t, create: t });

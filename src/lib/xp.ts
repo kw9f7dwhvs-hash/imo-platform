@@ -1,12 +1,13 @@
-const XP_BASE: Record<number, number> = { 1: 10, 2: 30, 3: 90, 4: 270, 5: 810 };
+const XP_BASE: Record<number, number> = { 1: 14, 2: 28, 3: 56, 4: 112, 5: 224 };
 const HINT_MULTS: Record<number, number> = { 0: 1.0, 1: 0.7, 2: 0.4, 3: 0.1 };
 
-export function calculateFinalXp(difficultyId: number, hintsUsed: number, isFirstAttempt: boolean): number {
+export function calculateFinalXp(difficultyId: number, hintsUsed: number, isFirstAttempt: boolean, score?: number): number {
   const base = XP_BASE[difficultyId] || 10;
+  const scoreMult = score !== undefined ? (score / 7) : 1.0;
   const hintMult = HINT_MULTS[hintsUsed] ?? 0;
   const firstMult = isFirstAttempt ? 1.2 : 1.0;
   if (hintMult === 0) return 0;
-  return Math.round(base * hintMult * firstMult);
+  return Math.round(base * scoreMult * hintMult * firstMult);
 }
 
 // Cumulative XP for level N: 50 x N x (N-1) / 2 (triangular numbers)

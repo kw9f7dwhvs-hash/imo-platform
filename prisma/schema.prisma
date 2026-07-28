@@ -86,6 +86,7 @@ model Submission {
   hintsUsed    Int       @default(0) @map("hints_used")
   attemptCount Int       @default(1) @map("attempt_count")
   feedback     String?
+  score        Int?       @map("score")
   createdAt    DateTime  @default(now()) @map("created_at")
   gradedAt     DateTime? @map("graded_at")
   gradedBy     Int?      @map("graded_by")
@@ -179,7 +180,6 @@ model Transaction {
   user       User     @relation(fields: [userId], references: [id])
   @@map("transactions")
 }
-
 
 
 

@@ -68,6 +68,9 @@ export default function ProblemDetailPage() {
   return (
     <AuthGuard>
       <div className="max-w-3xl mx-auto space-y-6">
+        <button onClick={() => router.back()} className="text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1">
+          &larr; Back
+        </button>
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold">{problem.title}</h1>

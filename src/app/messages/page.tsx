@@ -63,9 +63,10 @@ export default function MessagesPage() {
             <input type="text" placeholder="Subject" value={form.subject} onChange={e => setForm(f => ({...f, subject: e.target.value}))} className="flex-1 px-3 py-2 border rounded-lg text-sm" />
           </div>
           <textarea placeholder="Message" value={form.body} onChange={e => setForm(f => ({...f, body: e.target.value}))} rows={4} className="w-full px-3 py-2 border rounded-lg text-sm" />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <label className="text-sm text-gray-500">Coins:</label>
             <input type="number" min="0" value={form.coins} onChange={e => setForm(f => ({...f, coins: e.target.value}))} className="w-24 px-2 py-1 border rounded-lg text-sm" />
+            <span className="text-xs text-gray-400">Coins sent with this message will be added to the recipient's wallet</span>
           </div>
           <div className="flex gap-2">
             <button onClick={handleSend} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">Send</button>

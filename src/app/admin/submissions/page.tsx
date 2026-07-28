@@ -9,6 +9,7 @@ export default function AdminSubmissionsPage() {
   const [filter, setFilter] = useState('pending');
   const [grading, setGrading] = useState<number | null>(null);
   const [feedback, setFeedback] = useState('');
+  const [score, setScore] = useState<number>(7);
 
   const fetchSubmissions = async (status: string) => {
     setLoading(true);
@@ -19,16 +20,17 @@ export default function AdminSubmissionsPage() {
 
   useEffect(() => { fetchSubmissions(filter); }, [filter]);
 
-  const handleGrade = async (id: number, grade: string) => {
+  const handleGrade = async (id: number, grade: string, scoreVal: number) => {
     setGrading(id);
     const r = await fetch('/api/submissions/' + id + '/grade', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ grade, feedback: feedback || null }),
+      body: JSON.stringify({ grade, feedback: feedback || null, score: grade === 'pass' ? scoreVal : undefined }),
     });
     if (r.ok) {
       setSubmissions(s => s.filter(x => x.id !== id));
       setFeedback('');
+      setScore(7);
     }
     setGrading(null);
   };
@@ -41,13 +43,14 @@ export default function AdminSubmissionsPage() {
           {['pending', 'needs_clarification', 'needs_correction', 'retry', 'passed', 'revealed'].map(s => (
             <button key={s} onClick={() => setFilter(s)}
               className={'px-3 py-1.5 rounded-lg text-sm ' + (filter === s ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
-              {s.replace('_', ' ').replace(/^./, c => c.toUpperCase())}
+              {s === 'needs_clarification' ? 'Needs Clarification' : s === 'needs_correction' ? 'Needs Correction' : s.replace('_', ' ').replace(/^./, c => c.toUpperCase())}
             </button>
           ))}
         </div>
-        {loading ? <p className="text-gray-400">Loading...</p> : submissions.length === 0 ? (
-          <p className="text-gray-500">No submissions with status: {filter}</p>
-        ) : (
+        {loading ? <p className="text-gray-400">Loading...</p> : submissions.length === 0 ? (() => {
+          const displayName: Record<string,string> = { 'pending': 'Pending', 'needs_clarification': 'Needs Clarification', 'needs_correction': 'Needs Correction', 'retry': 'Retry', 'passed': 'Passed', 'revealed': 'Revealed' };
+          return <p className="text-gray-500">No submissions with status: {displayName[filter] || filter}</p>;
+        })() : (
           <div className="space-y-4">
             {submissions.map(sub => (
               <div key={sub.id} className="bg-white p-4 rounded-lg border space-y-3">
@@ -91,6 +94,18 @@ export default function AdminSubmissionsPage() {
                 </div>
 
                 {/* Grade buttons */}
+                {filter === 'pending' && (
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="text-sm text-gray-500">Score out of 7:</label>
+                  <div className="flex gap-1">
+                    {[1,2,3,4,5,6,7].map(s => (
+                      <button key={s} onClick={() => setScore(s)}
+                        className={'w-8 h-8 rounded text-sm font-medium ' + (score === s ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>{s}</button>
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-400">(for Pass grade, XP = score/7 base)</span>
+                </div>
+                )}
                 <div className="flex gap-2">
                   {[
                     { g: 'pass', label: 'Pass', cls: 'bg-green-600 hover:bg-green-700' },
@@ -99,7 +114,7 @@ export default function AdminSubmissionsPage() {
                     { g: 'retry', label: 'Retry', cls: 'bg-purple-600 hover:bg-purple-700' },
                   ].map(btn => (
                     <button key={btn.g}
-                      onClick={() => handleGrade(sub.id, btn.g)}
+                      onClick={() => handleGrade(sub.id, btn.g, score)}
                       disabled={grading === sub.id}
                       className={'px-4 py-1.5 text-white rounded-lg text-sm disabled:opacity-50 ' + btn.cls}>
                       {grading === sub.id ? '...' : btn.label}

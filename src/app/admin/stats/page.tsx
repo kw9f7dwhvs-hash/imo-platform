@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 
+const STATUS_LABEL: Record<string, string> = { 'all': 'All', 'pending': 'Pending', 'needs_clarification': 'Needs Clarification', 'needs_correction': 'Needs Correction', 'passed': 'Passed', 'retry': 'Retry', 'revealed': 'Revealed', 'answer_read': 'Read' };
 const catNames: Record<string, string> = { A: 'Algebra', N: 'Number Theory', G: 'Geometry', C: 'Combinatorics' };
-const diffNames: Record<string, string> = { '1': '★1', '2': '★2', '3': '★3', '4': '★4', '5': '★5' };
+const diffNames: Record<string, string> = { '1': '\u26051', '2': '\u26052', '3': '\u26053', '4': '\u26054', '5': '\u26055' };
 
 const statusBadge: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -45,7 +46,7 @@ export default function AdminStatsPage() {
           {['all', 'pending', 'passed', 'revealed', 'answer_read', 'retry'].map(f => (
             <button key={f} onClick={() => setLogFilter(f)}
               className={'px-3 py-1 rounded-lg text-xs ' + (logFilter === f ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600')}>
-              {f === 'all' ? 'All' : f.replace('_', ' ')}
+              {STATUS_LABEL[f] || f}
             </button>
           ))}
         </div>
@@ -141,7 +142,7 @@ export default function AdminStatsPage() {
                                 <td className="p-2 text-xs">{diffNames[String(sub.difficultyId)] || sub.difficultyId}</td>
                                 <td className="p-2">
                                   <span className={'text-xs px-2 py-0.5 rounded-full ' + (statusBadge[sub.status] || 'bg-gray-100')}>
-                                    {sub.status?.replace(/_/g, ' ') || sub.grade || '-'}
+                                    {STATUS_LABEL[sub.status] || sub.status?.replace(/_/g, ' ') || sub.grade || '-'}
                                   </span>
                                 </td>
                                 <td className="p-2 text-xs">#{sub.attemptCount}</td>
@@ -184,7 +185,7 @@ export default function AdminStatsPage() {
                     <table className="w-full text-sm mt-2">
                       <thead><tr className="border-t text-xs text-gray-500"><th className="text-left p-1">Student</th><th className="text-left p-1">Status</th><th className="text-left p-1">Grade</th><th className="text-left p-1">Hints</th><th className="text-left p-1">Attempts</th></tr></thead>
                       <tbody>{prob.students.map((s: any, i: number) => (
-                        <tr key={i} className="border-t"><td className="p-1">{s.username}</td><td className="p-1">{s.status || "-"}</td><td className="p-1">{s.grade || "-"}</td><td className="p-1">{s.hintsUsed}/3</td><td className="p-1">#{s.attemptCount}</td></tr>
+                        <tr key={i} className="border-t"><td className="p-1">{s.username}</td><td className="p-1">{STATUS_LABEL[s.status] || s.status || "-"}</td><td className="p-1">{s.grade || "-"}</td><td className="p-1">{s.hintsUsed}/3</td><td className="p-1">#{s.attemptCount}</td></tr>
                       ))}</tbody>
                     </table>
                   )}
