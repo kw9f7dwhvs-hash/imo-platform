@@ -135,6 +135,7 @@ export default function AdminSubmissionsPage() {
                       {grading === sub.id ? '...' : 'Unpass'}
                     </button>
                   )}
+                  {['pending', 'needs_clarification', 'needs_correction', 'retry'].includes(sub.status) && (
                   {[
                     { g: 'pass', label: 'Pass', cls: 'bg-green-600 hover:bg-green-700' },
                     { g: 'clarify', label: 'Clarify', cls: 'bg-blue-600 hover:bg-blue-700' },
@@ -148,6 +149,7 @@ export default function AdminSubmissionsPage() {
                       {grading === sub.id ? '...' : btn.label}
                     </button>
                   ))}
+                  )}
                 </div>
               </div>
             ))}

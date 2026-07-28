@@ -20,6 +20,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   });
   if (!sub) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+  // Prevent re-grading finalized submissions
+  const finalStatuses = ['passed', 'revealed', 'answer_read'];
+  if (finalStatuses.includes(sub.status)) {
+    return NextResponse.json({ error: 'Cannot grade a submission that is already ' + sub.status }, { status: 400 });
+  }
+
   let newStatus = sub.status;
   if (grade === 'pass') newStatus = 'passed';
   else if (grade === 'clarify') newStatus = 'needs_clarification';
