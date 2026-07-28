@@ -9,6 +9,7 @@ export async function POST(req: Request) {
   const user = session.user as any;
   if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+  try {
   const { userId, categoryId, amount } = await req.json();
   if (!userId || !categoryId || amount === undefined || amount === 0) {
     return NextResponse.json({ error: 'userId, categoryId, and non-zero amount required' }, { status: 400 });
@@ -33,12 +34,8 @@ export async function POST(req: Request) {
     });
   }
 
-  await prisma.xpLog.create({
-    data: {
-      userId, problemId: 0, categoryId,
-      baseXp: amount, hintMultiplier: 1.0, firstAttempt: false, finalXp: amount,
-    },
-  });
-
   return NextResponse.json({ ok: true, adjusted: amount });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

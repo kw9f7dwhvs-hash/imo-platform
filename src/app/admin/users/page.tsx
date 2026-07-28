@@ -49,7 +49,9 @@ export default function AdminUsersPage() {
       alert(`XP adjusted by ${amount > 0 ? '+' : ''}${amount}!`);
       setXpAdjust(null);
       setXpForm({ categoryId: 'A', amount: '' });
-    } else alert((await r.json()).error || 'Failed');
+    } else {
+      try { alert((await r.json()).error || 'Failed'); } catch { alert('Server error'); }
+    }
     setXpLoading(false);
   };
 
